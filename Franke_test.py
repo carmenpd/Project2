@@ -30,8 +30,9 @@ def MSE(y_data, y_model):
 
 # Define a function for R2
 def rsquare(y, ypredict):
-	ypredict = ypredict.reshape(-1,1)
-	return 1-(np.sum((y-ypredict)**2)/np.sum((y-np.mean(y))**2))
+    ypredict = ypredict.reshape(-1,1)
+    y = y.reshape(-1,1)
+    return 1-(np.sum((y-ypredict)**2)/np.sum((y-np.mean(y))**2))
 
 step = 0.005
 x = np.arange(0, 1, step)
@@ -40,7 +41,7 @@ x, y = np.meshgrid(x, y)
 target = FrankeFunction(x, y)
 target = target.reshape(-1, 1)
 
-poly_degree = 3
+poly_degree = 7
 X = create_X(x, y, poly_degree)
 
 X_train, X_test, t_train, t_test = train_test_split(X, target)
@@ -100,3 +101,8 @@ ax.set_title("Test R2")
 ax.set_ylabel("$\eta$")
 ax.set_xlabel("$\lambda$")
 plt.show()
+
+print(np.min(train_mse))
+print(np.min(test_mse))
+print(np.max(train_r2))
+print(np.max(test_r2))
