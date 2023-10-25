@@ -37,6 +37,9 @@ def rsquare(y, ypredict):
 step = 0.005
 x = np.arange(0, 1, step)
 y = np.arange(0, 1, step)
+# what about random input like in project 1? I did a few runs and couldnt tell whats better
+#x = np.random.rand(200)
+#y = np.random.rand(200)
 x, y = np.meshgrid(x, y)
 target = FrankeFunction(x, y)
 target = target.reshape(-1, 1)
