@@ -50,12 +50,16 @@ X = create_X(x, y, poly_degree)
 X_train, X_test, t_train, t_test = train_test_split(X, target)
 
 input_nodes = X_train.shape[1]
+hidden_nodes_1 = input_nodes//2
+hidden_nodes_2 = input_nodes//3
 output_nodes = t_train.shape[1]
+print(input_nodes)
+print(output_nodes)
 
-linear_regression = FFNN((input_nodes, output_nodes), output_func=identity, cost_func=CostOLS, seed=2023)
+linear_regression = FFNN((input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes), output_func=identity, cost_func=CostOLS, seed=2023)
 
-eta_vals = np.logspace(-5, 1, 7)
-lmbd_vals = np.logspace(-5, 1, 7)
+eta_vals = np.logspace(-5, 0, 6)
+lmbd_vals = np.logspace(-5, 0, 6)
 train_mse = np.zeros((len(eta_vals), len(lmbd_vals)))
 test_mse = np.zeros((len(eta_vals), len(lmbd_vals)))
 train_r2 = np.zeros((len(eta_vals), len(lmbd_vals)))
