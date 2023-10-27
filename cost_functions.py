@@ -1,4 +1,5 @@
 import autograd.numpy as np
+from sklearn import metrics
 
 def CostOLS(target):
     
@@ -24,4 +25,12 @@ def CostCrossEntropy(target):
     def func(X):
         return -(1.0 / target.size) * np.sum(target * np.log(X + 10e-10))
 
+    return func
+
+
+def Accuracy(target):
+
+    def func(X):
+        return metrics.accuracy_score(target, X)
+    
     return func
