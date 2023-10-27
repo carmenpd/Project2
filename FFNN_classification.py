@@ -14,7 +14,7 @@ from learning_rate_methods import *
 warnings.simplefilter("error")
 
 
-class FFNN:
+class FFNN_classification:
     """
     Description:
     ------------

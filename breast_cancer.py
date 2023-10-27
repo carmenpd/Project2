@@ -2,7 +2,7 @@ import pandas as pd
 from ucimlrepo import fetch_ucirepo 
 import autograd.numpy as np
 from sklearn.model_selection import train_test_split
-from FFNN import *
+from FFNN_classification import *
 from func_autograd import *
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -32,7 +32,7 @@ output_nodes = t_train.shape[1]
 print(input_nodes)
 print(output_nodes)
 
-classification = FFNN((input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes), output_func=softmax, cost_func=Accuracy, seed=2023)
+classification = FFNN_classification((input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes), output_func=softmax, cost_func=Accuracy, seed=2023)
 
 eta_vals = np.logspace(-5, 0, 6)
 lmbd_vals = np.logspace(-5, 0, 6)
