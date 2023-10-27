@@ -8,11 +8,18 @@ import seaborn as sns
 import matplotlib.pyplot as plt
   
 # fetch dataset 
-breast_cancer_wisconsin_original = fetch_ucirepo(id=15) 
+breast_cancer_wisconsin_original = fetch_ucirepo(id=15)
   
 # data (as pandas dataframes) 
 X = breast_cancer_wisconsin_original.data.features
-y = breast_cancer_wisconsin_original.data.targets 
+y = breast_cancer_wisconsin_original.data.targets
+df = pd.DataFrame(np.column_stack((X,y)))
+df = df.dropna()
+df = np.array(df)
+X = df[:, :-1]
+y = df[:, -1]
+
+#ata = np.dropna(data)
   
 # metadata 
 #print(breast_cancer_wisconsin_original.metadata) 
@@ -24,11 +31,13 @@ y = breast_cancer_wisconsin_original.data.targets
 
 
 X_train, X_test, t_train, t_test = train_test_split(X, y)
+print(type(X_train))
+print(type(t_train))
 
 input_nodes = X_train.shape[1]
 hidden_nodes_1 = input_nodes//2
 hidden_nodes_2 = input_nodes//3
-output_nodes = t_train.shape[1]
+output_nodes = 1
 print(input_nodes)
 print(output_nodes)
 

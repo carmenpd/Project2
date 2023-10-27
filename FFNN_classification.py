@@ -146,10 +146,10 @@ class FFNN_classification:
                     if i == batches - 1:
                         # If the for loop has reached the last batch, take all thats left
                         X_batch = X[i * batch_size :, :]
-                        t_batch = t[i * batch_size :, :]
+                        t_batch = t[i * batch_size :]
                     else:
-                        X_batch = X[i * batch_size : (i + 1) * batch_size, :]
-                        t_batch = t[i * batch_size : (i + 1) * batch_size, :]
+                        X_batch = X[i * batch_size : (i + 1) * batch_size]
+                        t_batch = t[i * batch_size : (i + 1) * batch_size]
 
                     self._feedforward(X_batch)
                     self._backpropagate(X_batch, t_batch, lam)
@@ -351,8 +351,8 @@ class FFNN_classification:
             No return value.
 
         """
-        out_derivative = derivate(self.output_func)
-        hidden_derivative = derivate(self.hidden_func)
+        out_derivative = grad(self.output_func)
+        hidden_derivative = grad(self.hidden_func)
 
         for i in range(len(self.weights) - 1, -1, -1):
             # delta terms for output
