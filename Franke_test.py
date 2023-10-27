@@ -48,6 +48,7 @@ poly_degree = 7
 X = create_X(x, y, poly_degree)
 
 X_train, X_test, t_train, t_test = train_test_split(X, target)
+print(np.size(t_train))
 
 input_nodes = X_train.shape[1]
 hidden_nodes_1 = input_nodes//2

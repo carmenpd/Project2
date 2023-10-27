@@ -19,7 +19,6 @@ df = np.array(df)
 X = df[:, :-1]
 y = df[:, -1]
 
-#ata = np.dropna(data)
   
 # metadata 
 #print(breast_cancer_wisconsin_original.metadata) 
@@ -31,8 +30,6 @@ y = df[:, -1]
 
 
 X_train, X_test, t_train, t_test = train_test_split(X, y)
-print(type(X_train))
-print(type(t_train))
 
 input_nodes = X_train.shape[1]
 hidden_nodes_1 = input_nodes//2
