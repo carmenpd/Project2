@@ -40,8 +40,8 @@ class FFNN:
         self,
         dimensions: tuple[int],
         hidden_func: Callable = sigmoid,
-        output_func: Callable = lambda x: x,
-        cost_func: Callable = CostOLS,
+        output_func: Callable = softmax,
+        cost_func: Callable = Accuracy,
         seed: int = None):
         
         self.dimensions = dimensions
