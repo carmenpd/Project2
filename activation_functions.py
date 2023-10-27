@@ -17,6 +17,10 @@ def softmax(X):
     delta = 10e-10
     return np.exp(X) / (np.sum(np.exp(X), axis=-1, keepdims=True) + delta)
 
+def heaviside(X):
+    if X>0:
+        return 1
+    else: return 0
 
 def RELU(X):
     return np.where(X > np.zeros(X.shape), X, np.zeros(X.shape))
