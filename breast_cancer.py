@@ -7,6 +7,14 @@ from func_autograd import *
 import seaborn as sns
 import matplotlib.pyplot as plt
   
+def to_categorical_numpy(integer_vector):
+    n_inputs = len(integer_vector)
+    n_categories = np.max(integer_vector) + 1
+    onehot_vector = np.zeros((n_inputs, n_categories))
+    onehot_vector[range(n_inputs), integer_vector] = 1
+    
+    return onehot_vector
+
 # fetch dataset 
 breast_cancer_wisconsin_original = fetch_ucirepo(id=15)
   
@@ -17,8 +25,9 @@ df = pd.DataFrame(np.column_stack((X,y)))
 df = df.dropna()
 df = np.array(df)
 X = df[:, :-1]
-y = df[:, -1]
-
+y = df[:, -1].astype(int)  # Convert y values to integer type
+y = np.where(y == 2, 0, 1) # Map 2 to 0 and 4 to 1. If this is not done, we get 5 categories (0, 1, 2, 3, 4)
+y = to_categorical_numpy(y) # Convert to one-hot encoding
   
 # metadata 
 #print(breast_cancer_wisconsin_original.metadata) 
@@ -34,7 +43,7 @@ X_train, X_test, t_train, t_test = train_test_split(X, y)
 input_nodes = X_train.shape[1]
 hidden_nodes_1 = input_nodes//2
 hidden_nodes_2 = input_nodes//3
-output_nodes = 1
+output_nodes = t_train.shape[1] # corresponds to the number of categories, i.e. 2
 print(input_nodes)
 print(output_nodes)
 
@@ -55,11 +64,11 @@ for i, eta in enumerate(eta_vals):
         scores = classification.fit(X_train, t_train, scheduler, epochs = 100, batches=2, lam=lmbd)
 
         pred_train = classification.predict(X_train)
-        train_mse[i, j] = Accuracy(pred_train, t_train)
+        train_mse[i, j] = metrics.accuracy_score(t_train, pred_train)
         #train_r2[i, j] = rsquare(pred_train, t_train)
         
         pred_test = classification.predict(X_test)
-        test_mse[i, j] = Accuracy(pred_test, t_test)
+        test_mse[i, j] = metrics.accuracy_score(t_test, pred_test)
         #test_r2[i, j] = rsquare(pred_test, t_test)
 
 
