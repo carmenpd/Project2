@@ -351,8 +351,8 @@ class FFNN_classification:
             No return value.
 
         """
-        out_derivative = grad(self.output_func)
-        hidden_derivative = grad(self.hidden_func)
+        out_derivative = elementwise_grad(self.output_func)
+        hidden_derivative = elementwise_grad(self.hidden_func)
 
         for i in range(len(self.weights) - 1, -1, -1):
             # delta terms for output
@@ -424,6 +424,7 @@ class FFNN_classification:
         if (
             self.cost_func.__name__ == "CostLogReg"
             or self.cost_func.__name__ == "CostCrossEntropy"
+            or self.cost_func.__name__ == "Accuracy"
         ):
             self.classification = True
 
