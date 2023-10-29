@@ -74,14 +74,14 @@ for i, eta in enumerate(eta_vals):
 
 fig, ax = plt.subplots(figsize = (8, 8))
 sns.heatmap(train_mse, annot = True, ax = ax, cmap = "viridis")
-ax.set_title("Training MSE")
+ax.set_title("Training accuracy score")
 ax.set_ylabel("$\eta$")
 ax.set_xlabel("$\lambda$")
 plt.show()
 
 fig, ax = plt.subplots(figsize = (8, 8))
 sns.heatmap(test_mse, annot = True, ax = ax, cmap = "viridis")
-ax.set_title("Test MSE")
+ax.set_title("Test accuracy score")
 ax.set_ylabel("$\eta$")
 ax.set_xlabel("$\lambda$")
 plt.show()
