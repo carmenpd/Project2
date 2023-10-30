@@ -51,10 +51,8 @@ classification = FFNN_classification((input_nodes, hidden_nodes_1, hidden_nodes_
 
 eta_vals = np.logspace(-5, 0, 6)
 lmbd_vals = np.logspace(-5, 0, 6)
-train_mse = np.zeros((len(eta_vals), len(lmbd_vals)))
-test_mse = np.zeros((len(eta_vals), len(lmbd_vals)))
-train_r2 = np.zeros((len(eta_vals), len(lmbd_vals)))
-test_r2 = np.zeros((len(eta_vals), len(lmbd_vals)))
+train_accuracy = np.zeros((len(eta_vals), len(lmbd_vals)))
+test_accuracy = np.zeros((len(eta_vals), len(lmbd_vals)))
 
 for i, eta in enumerate(eta_vals):
     for j, lmbd in enumerate(lmbd_vals): 
@@ -64,23 +62,20 @@ for i, eta in enumerate(eta_vals):
         scores = classification.fit(X_train, t_train, scheduler, epochs = 100, batches=2, lam=lmbd)
 
         pred_train = classification.predict(X_train)
-        train_mse[i, j] = metrics.accuracy_score(t_train, pred_train)
-        #train_r2[i, j] = rsquare(pred_train, t_train)
+        train_accuracy[i, j] = metrics.accuracy_score(t_train, pred_train)
         
         pred_test = classification.predict(X_test)
-        test_mse[i, j] = metrics.accuracy_score(t_test, pred_test)
-        #test_r2[i, j] = rsquare(pred_test, t_test)
-
+        test_accuracy[i, j] = metrics.accuracy_score(t_test, pred_test)
 
 fig, ax = plt.subplots(figsize = (8, 8))
-sns.heatmap(train_mse, annot = True, ax = ax, cmap = "viridis")
+sns.heatmap(train_accuracy, annot = True, ax = ax, cmap = "viridis")
 ax.set_title("Training accuracy score")
 ax.set_ylabel("$\eta$")
 ax.set_xlabel("$\lambda$")
 plt.show()
 
 fig, ax = plt.subplots(figsize = (8, 8))
-sns.heatmap(test_mse, annot = True, ax = ax, cmap = "viridis")
+sns.heatmap(test_accuracy, annot = True, ax = ax, cmap = "viridis")
 ax.set_title("Test accuracy score")
 ax.set_ylabel("$\eta$")
 ax.set_xlabel("$\lambda$")
@@ -102,7 +97,7 @@ ax.set_xlabel("$\lambda$")
 plt.show()
 """
 
-print(np.min(train_mse))
-print(np.min(test_mse))
+print(np.min(train_accuracy))
+print(np.min(test_accuracy))
 #print(np.max(train_r2))
 #print(np.max(test_r2))
