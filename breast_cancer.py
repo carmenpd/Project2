@@ -110,5 +110,3 @@ plt.show()
 
 print(np.min(train_accuracy))
 print(np.min(test_accuracy))
-#print(np.max(train_r2))
-#print(np.max(test_r2))
