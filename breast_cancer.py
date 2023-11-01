@@ -47,7 +47,10 @@ output_nodes = t_train.shape[1] # corresponds to the number of categories, i.e. 
 print(input_nodes)
 print(output_nodes)
 
-classification = FFNN_classification((input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes), output_func=softmax, cost_func=Accuracy, seed=2023)
+# choices for hidden activation: sigmoid
+# choices for output activation: sigmoid (for binary output), softmax
+# choices for cost function: CostCrossEntropy or Accuracy
+classification = FFNN_classification((input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes), output_func=softmax, cost_func=CostCrossEntropy, seed=2023)
 
 eta_vals = np.logspace(-5, 0, 6)
 lmbd_vals = np.logspace(-5, 0, 6)
