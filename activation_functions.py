@@ -1,6 +1,7 @@
 import autograd.numpy as np
 from autograd import elementwise_grad
 import numpy as np
+import autograd.numpy as np
 
 def identity(X):
     return X

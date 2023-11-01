@@ -2,7 +2,7 @@
 
 -   Franke 
     -   try different activation funcs
-    -   study weight/bias initialization (Xavier Glorot?)
+    -   study weight/bias initialization (Xavier Glorot vs ordinary normal distribution)
     -   compare with keras/pytorch/tensorflow
     -   eta/lambda tuning
     -   different # layers and nodes
