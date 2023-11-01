@@ -351,8 +351,8 @@ class FFNN_classification:
             No return value.
 
         """
-        out_derivative = elementwise_grad(self.output_func)
-        hidden_derivative = elementwise_grad(self.hidden_func)
+        out_derivative = derivate(self.output_func)
+        hidden_derivative = derivate(self.hidden_func)
 
         for i in range(len(self.weights) - 1, -1, -1):
             # delta terms for output
