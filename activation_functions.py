@@ -1,5 +1,6 @@
 import autograd.numpy as np
 from autograd import elementwise_grad
+import numpy as np
 
 def identity(X):
     return X
@@ -10,17 +11,15 @@ def sigmoid(X):
         return 1.0 / (1 + np.exp(-X))
     except FloatingPointError:
         return np.where(X > np.zeros(X.shape), np.ones(X.shape), np.zeros(X.shape))
+    
+def tanh(X):
+    return np.tanh(X)
 
 
 def softmax(X):
     X = X - np.max(X, axis=-1, keepdims=True)
     delta = 10e-10
     return np.exp(X) / (np.sum(np.exp(X), axis=-1, keepdims=True) + delta)
-
-def heaviside(X):
-    if X>0:
-        return 1
-    else: return 0
 
 def RELU(X):
     return np.where(X > np.zeros(X.shape), X, np.zeros(X.shape))
@@ -46,6 +45,13 @@ def derivate(func):
             return np.where(X > 0, 1, delta)
 
         return func
+
+    elif func.__name__ == "sigmoid":
+
+            def func(X):
+                return sigmoid(X)*(1-sigmoid(X))
+
+            return func
 
     else:
         return elementwise_grad(func)

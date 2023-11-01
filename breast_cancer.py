@@ -47,7 +47,10 @@ output_nodes = t_train.shape[1] # corresponds to the number of categories, i.e. 
 print(input_nodes)
 print(output_nodes)
 
-classification = FFNN_classification((input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes), output_func=softmax, cost_func=Accuracy, seed=2023)
+# choices for hidden activation: sigmoid
+# choices for output activation: sigmoid (for binary output), softmax
+# choices for cost function: CostCrossEntropy (almost zero is th optimal result) or Accuracy (between zero and 1, 1 is the optimal result)
+classification = FFNN_classification((input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes), output_func=sigmoid, cost_func=CostCrossEntropy, seed=2023)
 
 eta_vals = np.logspace(-5, 0, 6)
 lmbd_vals = np.logspace(-5, 0, 6)
@@ -69,14 +72,14 @@ for i, eta in enumerate(eta_vals):
 
 fig, ax = plt.subplots(figsize = (8, 8))
 sns.heatmap(train_accuracy, annot = True, ax = ax, cmap = "viridis")
-ax.set_title("Training accuracy score")
+ax.set_title("Training accuracy/cross entropy score")
 ax.set_ylabel("$\eta$")
 ax.set_xlabel("$\lambda$")
 plt.show()
 
 fig, ax = plt.subplots(figsize = (8, 8))
 sns.heatmap(test_accuracy, annot = True, ax = ax, cmap = "viridis")
-ax.set_title("Test accuracy score")
+ax.set_title("Test accuracy/cross entropy score")
 ax.set_ylabel("$\eta$")
 ax.set_xlabel("$\lambda$")
 plt.show()
