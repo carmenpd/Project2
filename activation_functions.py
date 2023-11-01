@@ -1,5 +1,6 @@
 import autograd.numpy as np
 from autograd import elementwise_grad
+import numpy as np
 
 def identity(X):
     return X
@@ -10,6 +11,9 @@ def sigmoid(X):
         return 1.0 / (1 + np.exp(-X))
     except FloatingPointError:
         return np.where(X > np.zeros(X.shape), np.ones(X.shape), np.zeros(X.shape))
+    
+def tanh(X):
+    return np.tanh(X)
 
 
 def softmax(X):
