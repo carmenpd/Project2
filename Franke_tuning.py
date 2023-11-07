@@ -152,8 +152,8 @@ print("eta_vals " , eta_vals)
 #### Optimizer comparison ####
 # eta = 1e-1
 moment = 0.3
-n_epochs = 500
-batches = 50
+n_epochs = 400
+batches = 40
 eta_vals = np.logspace(-6, -1, 6)
 lmbd_vals = np.logspace(-5, 0, 6)
 
@@ -244,6 +244,6 @@ for eta, sub in zip(eta_vals, range(len(ax.flatten()))):
 
 # ax.legend(loc='best', fontsize = 10)
 labels = ['Momentum', 'Adagrad', 'Momentum Adagrad', 'RMSprop', 'Adam']
-fig.subplots_adjust(wspace=0.4, hspace=0.35)
+fig.subplots_adjust(wspace=0.4, hspace=0.5)
 plt.legend(labels=labels, loc='lower center', bbox_to_anchor=(0.5, 0), ncol=5, fontsize = 10, bbox_transform=fig.transFigure)
 plt.show()
