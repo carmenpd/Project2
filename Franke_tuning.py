@@ -150,72 +150,98 @@ print("eta_vals " , eta_vals)
 # print("r squared", train_r2)
 
 #### Optimizer comparison ####
-eta = 1e-1
+# eta = 1e-1
 moment = 0.3
 n_epochs = 500
 batches = 5
+eta_vals = np.logspace(-6, -1, 6)
 lmbd_vals = np.logspace(-5, 0, 6)
-score_dict = {
-    'momentum': {
-        'scheduler': Momentum(eta=eta, momentum=moment),
-        'color': 'blue', 
-        'train': {'mse': [], 'r2': []}, 
-        'test': {'mse': [], 'r2': []}
-    }, 
-    'adagrad': {
-        'scheduler': Adagrad(eta=eta),
-        'color': 'black',
-        'train': {'mse': [], 'r2': []}, 
-        'test': {'mse': [], 'r2': []}
-    }, 
-    'adagrad_momentum': {
-        'scheduler': AdagradMomentum(eta=eta, momentum=moment),
-        'color': 'green',
-        'train': {'mse': [], 'r2': []}, 
-        'test': {'mse': [], 'r2': []}
-    }, 
-    'rmsprop': {
-        'scheduler': RMS_prop(eta=eta, rho=0.9),
-        'color': 'red',
-        'train': {'mse': [], 'r2': []}, 
-        'test': {'mse': [], 'r2': []}
-    }, 
-    'adam': {
-        'scheduler': Adam(eta=eta, rho=0.9, rho2=0.999),
-        'color': 'purple',
-        'train': {'mse': [], 'r2': []}, 
-        'test': {'mse': [], 'r2': []}
+
+fig, ax = plt.subplots(figsize = (5, 4), tight_layout = True, nrows=3, ncols=2)
+
+for eta, sub in zip(eta_vals, range(len(ax.flatten()))):
+    print(sub, type(sub))
+    print(ax)
+    print(ax.flatten())
+    score_dict = {
+        'momentum': {
+            'scheduler': Momentum(eta=eta, momentum=moment),
+            'color': 'blue', 
+            'train': {'mse': [], 'r2': []}, 
+            'test': {'mse': [], 'r2': []}
+        }, 
+        'adagrad': {
+            'scheduler': Adagrad(eta=eta),
+            'color': 'black',
+            'train': {'mse': [], 'r2': []}, 
+            'test': {'mse': [], 'r2': []}
+        }, 
+        'adagrad_momentum': {
+            'scheduler': AdagradMomentum(eta=eta, momentum=moment),
+            'color': 'green',
+            'train': {'mse': [], 'r2': []}, 
+            'test': {'mse': [], 'r2': []}
+        }, 
+        'rmsprop': {
+            'scheduler': RMS_prop(eta=eta, rho=0.9),
+            'color': 'red',
+            'train': {'mse': [], 'r2': []}, 
+            'test': {'mse': [], 'r2': []}
+        }, 
+        'adam': {
+            'scheduler': Adam(eta=eta, rho=0.9, rho2=0.999),
+            'color': 'purple',
+            'train': {'mse': [], 'r2': []}, 
+            'test': {'mse': [], 'r2': []}
+        }
     }
-}
+    for key in score_dict.keys():
+        for i, lmd in enumerate(lmbd_vals):
+            try:
+                linear_regression.reset_weights()
+                score_dict[key]['scheduler'].reset()
+                score = linear_regression.fit(X_train, t_train, score_dict[key]['scheduler'], epochs = n_epochs, batches=10, lam=lmd)
+                pred_train = linear_regression.predict(X_train)
+                score_dict[key]['train']['mse'].append(MSE(pred_train, t_train))
+                score_dict[key]['train']['r2'].append(rsquare(t_train, pred_train))
+                pred_test = linear_regression.predict(X_test)
+                score_dict[key]['test']['mse'].append(MSE(pred_test, t_test))
+                score_dict[key]['test']['r2'].append(rsquare(t_test, pred_test))
+            except:
+                score_dict[key]['train']['mse'].append(np.nan)
+                score_dict[key]['train']['r2'].append(np.nan)
+                score_dict[key]['test']['mse'].append(np.nan)
+                score_dict[key]['test']['r2'].append(np.nan)
+        match sub:
+            case 0|1:
+                ax[0, sub].plot(lmbd_vals, score_dict[key]['train']['mse'], label = key, color = score_dict[key]['color'])
+                ax[0, sub].plot(lmbd_vals, score_dict[key]['test']['mse'], color = score_dict[key]['color'], linestyle = "--")
+                ax[0, sub].set_xscale("log")
+                ax[0, sub].set_title(f"eta = {eta:10.0e}", fontsize = 14)
+                ax[0, sub].set_xlabel("$\lambda$", fontsize = 14)
+                ax[0, sub].set_ylabel("MSE", fontsize = 14)
+                ax[0, sub].tick_params(axis='both', which='major', length=5)
+                ax[0, sub].tick_params(axis='both', which='minor', length=3)
+            case 2|3:
+                ax[1, sub - 2].plot(lmbd_vals, score_dict[key]['train']['mse'], label = key, color = score_dict[key]['color'])
+                ax[1, sub - 2].plot(lmbd_vals, score_dict[key]['test']['mse'], color = score_dict[key]['color'], linestyle = "--")
+                ax[1, sub - 2].set_xscale("log")
+                ax[1, sub - 2].set_title(f"eta = {eta:10.0e}", fontsize = 14)
+                ax[1, sub - 2].set_xlabel("$\lambda$", fontsize = 14)
+                ax[1, sub - 2].set_ylabel("MSE", fontsize = 14)
+                ax[1, sub - 2].tick_params(axis='both', which='major', length=5)
+                ax[1, sub - 2].tick_params(axis='both', which='minor', length=3)
+            case 4|5:
+                ax[2, sub - 4].plot(lmbd_vals, score_dict[key]['train']['mse'], label = key, color = score_dict[key]['color'])
+                ax[2, sub - 4].plot(lmbd_vals, score_dict[key]['test']['mse'], color = score_dict[key]['color'], linestyle = "--")
+                ax[2, sub - 4].set_xscale("log")
+                ax[2, sub - 4].set_title(f"eta = {eta:10.0e}", fontsize = 14)
+                ax[2, sub - 4].set_xlabel("$\lambda$", fontsize = 14)
+                ax[2, sub - 4].set_ylabel("MSE", fontsize = 14)
+                ax[2, sub - 4].tick_params(axis='both', which='major', length=5)
+                ax[2, sub - 4].tick_params(axis='both', which='minor', length=3)
+        # ax.plot(lmbd_vals, score_dict[key]['test']['mse'], label = key + " test", color = score_dict[key]['color'], linestyle = "--")
 
-fig, ax = plt.subplots(figsize = (5, 4), tight_layout = True)
-for key in score_dict.keys():
-    for i, lmd in enumerate(lmbd_vals):
-        try:
-            linear_regression.reset_weights()
-            score_dict[key]['scheduler'].reset()
-            score = linear_regression.fit(X_train, t_train, score_dict[key]['scheduler'], epochs = n_epochs, batches=10, lam=lmd)
-            pred_train = linear_regression.predict(X_train)
-            score_dict[key]['train']['mse'].append(MSE(pred_train, t_train))
-            score_dict[key]['train']['r2'].append(rsquare(t_train, pred_train))
-            pred_test = linear_regression.predict(X_test)
-            score_dict[key]['test']['mse'].append(MSE(pred_test, t_test))
-            score_dict[key]['test']['r2'].append(rsquare(t_test, pred_test))
-        except:
-            score_dict[key]['train']['mse'].append(np.nan)
-            score_dict[key]['train']['r2'].append(np.nan)
-            score_dict[key]['test']['mse'].append(np.nan)
-            score_dict[key]['test']['r2'].append(np.nan)
-
-    ax.plot(lmbd_vals, score_dict[key]['train']['mse'], label = key, color = score_dict[key]['color'])
-    ax.plot(lmbd_vals, score_dict[key]['test']['mse'], color = score_dict[key]['color'], linestyle = "--")
-    # ax.plot(lmbd_vals, score_dict[key]['test']['mse'], label = key + " test", color = score_dict[key]['color'], linestyle = "--")
-
-ax.set_xscale("log")
-ax.set_title(f"eta = {eta:10.0e}", fontsize = 14)
-ax.set_xlabel("$\lambda$", fontsize = 14)
-ax.set_ylabel("MSE", fontsize = 14)
-ax.tick_params(axis='both', which='major', length=5)
-ax.tick_params(axis='both', which='minor', length=3)
 # ax.legend(loc='best', fontsize = 10)
+fig.legend(loc='lower center', bbox_to_anchor=(0.5, 0.05), ncol=5, fontsize = 10)
 plt.show()
