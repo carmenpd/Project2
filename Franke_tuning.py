@@ -153,16 +153,13 @@ print("eta_vals " , eta_vals)
 # eta = 1e-1
 moment = 0.3
 n_epochs = 500
-batches = 5
+batches = 50
 eta_vals = np.logspace(-6, -1, 6)
 lmbd_vals = np.logspace(-5, 0, 6)
 
-fig, ax = plt.subplots(figsize = (5, 4), tight_layout = True, nrows=3, ncols=2)
+fig, ax = plt.subplots(figsize = (9, 9), nrows=3, ncols=2)
 
 for eta, sub in zip(eta_vals, range(len(ax.flatten()))):
-    print(sub, type(sub))
-    print(ax)
-    print(ax.flatten())
     score_dict = {
         'momentum': {
             'scheduler': Momentum(eta=eta, momentum=moment),
@@ -214,28 +211,31 @@ for eta, sub in zip(eta_vals, range(len(ax.flatten()))):
                 score_dict[key]['test']['r2'].append(np.nan)
         match sub:
             case 0|1:
-                ax[0, sub].plot(lmbd_vals, score_dict[key]['train']['mse'], label = key, color = score_dict[key]['color'])
-                ax[0, sub].plot(lmbd_vals, score_dict[key]['test']['mse'], color = score_dict[key]['color'], linestyle = "--")
+                if sub == 0:
+                    ax[0, sub].plot(lmbd_vals, score_dict[key]['train']['mse'], label = key, color = score_dict[key]['color'])
+                else:
+                    ax[0, sub].plot(lmbd_vals, score_dict[key]['train']['mse'], color = score_dict[key]['color'])
+                # ax[0, sub].plot(lmbd_vals, score_dict[key]['test']['mse'], color = score_dict[key]['color'], linestyle = "--")
                 ax[0, sub].set_xscale("log")
-                ax[0, sub].set_title(f"eta = {eta:10.0e}", fontsize = 14)
+                ax[0, sub].set_title(f"$\eta$ = {eta:10.0e}", fontsize = 14)
                 ax[0, sub].set_xlabel("$\lambda$", fontsize = 14)
                 ax[0, sub].set_ylabel("MSE", fontsize = 14)
                 ax[0, sub].tick_params(axis='both', which='major', length=5)
                 ax[0, sub].tick_params(axis='both', which='minor', length=3)
             case 2|3:
-                ax[1, sub - 2].plot(lmbd_vals, score_dict[key]['train']['mse'], label = key, color = score_dict[key]['color'])
-                ax[1, sub - 2].plot(lmbd_vals, score_dict[key]['test']['mse'], color = score_dict[key]['color'], linestyle = "--")
+                ax[1, sub - 2].plot(lmbd_vals, score_dict[key]['train']['mse'], color = score_dict[key]['color'])
+                # ax[1, sub - 2].plot(lmbd_vals, score_dict[key]['test']['mse'], color = score_dict[key]['color'], linestyle = "--")
                 ax[1, sub - 2].set_xscale("log")
-                ax[1, sub - 2].set_title(f"eta = {eta:10.0e}", fontsize = 14)
+                ax[1, sub - 2].set_title(f"$\eta$ = {eta:10.0e}", fontsize = 14)
                 ax[1, sub - 2].set_xlabel("$\lambda$", fontsize = 14)
                 ax[1, sub - 2].set_ylabel("MSE", fontsize = 14)
                 ax[1, sub - 2].tick_params(axis='both', which='major', length=5)
                 ax[1, sub - 2].tick_params(axis='both', which='minor', length=3)
             case 4|5:
-                ax[2, sub - 4].plot(lmbd_vals, score_dict[key]['train']['mse'], label = key, color = score_dict[key]['color'])
-                ax[2, sub - 4].plot(lmbd_vals, score_dict[key]['test']['mse'], color = score_dict[key]['color'], linestyle = "--")
+                ax[2, sub - 4].plot(lmbd_vals, score_dict[key]['train']['mse'], color = score_dict[key]['color'])
+                # ax[2, sub - 4].plot(lmbd_vals, score_dict[key]['test']['mse'], color = score_dict[key]['color'], linestyle = "--")
                 ax[2, sub - 4].set_xscale("log")
-                ax[2, sub - 4].set_title(f"eta = {eta:10.0e}", fontsize = 14)
+                ax[2, sub - 4].set_title(f"$\eta$ = {eta:10.0e}", fontsize = 14)
                 ax[2, sub - 4].set_xlabel("$\lambda$", fontsize = 14)
                 ax[2, sub - 4].set_ylabel("MSE", fontsize = 14)
                 ax[2, sub - 4].tick_params(axis='both', which='major', length=5)
@@ -243,5 +243,7 @@ for eta, sub in zip(eta_vals, range(len(ax.flatten()))):
         # ax.plot(lmbd_vals, score_dict[key]['test']['mse'], label = key + " test", color = score_dict[key]['color'], linestyle = "--")
 
 # ax.legend(loc='best', fontsize = 10)
-fig.legend(loc='lower center', bbox_to_anchor=(0.5, 0.05), ncol=5, fontsize = 10)
+labels = ['Momentum', 'Adagrad', 'Momentum Adagrad', 'RMSprop', 'Adam']
+fig.subplots_adjust(wspace=0.4, hspace=0.35)
+plt.legend(labels=labels, loc='lower center', bbox_to_anchor=(0.5, 0), ncol=5, fontsize = 10, bbox_transform=fig.transFigure)
 plt.show()
