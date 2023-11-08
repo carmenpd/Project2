@@ -7,6 +7,10 @@ from func_autograd import *
 import seaborn as sns
 import matplotlib.pyplot as plt
 from activation_functions import *
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import ConfusionMatrixDisplay
+
+seed(2018)
 
 def logistic_regression_sgd(X, y, eta, regularization, n_epochs, size_minibach):
     # define initial beta and m
@@ -24,14 +28,6 @@ def logistic_regression_sgd(X, y, eta, regularization, n_epochs, size_minibach):
             beta -= eta*gradients
     return beta
 
-def to_categorical_numpy(integer_vector):
-    n_inputs = len(integer_vector)
-    n_categories = np.max(integer_vector) + 1
-    onehot_vector = np.zeros((n_inputs, n_categories))
-    onehot_vector[range(n_inputs), integer_vector] = 1
-    
-    return onehot_vector
-
 # fetch dataset 
 breast_cancer_wisconsin_original = fetch_ucirepo(id=15)
   
@@ -44,57 +40,77 @@ df = np.array(df)
 X = df[:, :-1]
 y = df[:, -1].astype(int)  # Convert y values to integer type
 y = np.where(y == 2, 0, 1) # Map 2 to 0 and 4 to 1. If this is not done, we get 5 categories (0, 1, 2, 3, 4)
-#y = to_categorical_numpy(y) # Convert to one-hot encoding
 
-X_train, X_test, t_train, t_test = train_test_split(X, y)
+X_train, X_test, t_train, t_test = train_test_split(X, y, test_size = 0.33, random_state = 42)
 
-eta_vals = np.logspace(-5, -1, 6)
-lmb_vals = np.logspace(-6, -1, 6)
+eta_vals = np.logspace(-5, -1, 5)
+lmb_vals = np.logspace(-5, -1, 5)
+test_max_acc = 0
 train_accuracy = np.zeros((len(eta_vals), len(lmb_vals)))
 test_accuracy = np.zeros((len(eta_vals), len(lmb_vals)))
 
 for i, eta in enumerate(eta_vals):
     for j, lmb in enumerate(lmb_vals):
-        betas = logistic_regression_sgd(X_train, t_train, eta, lmb, 200, 15)
+        betas = logistic_regression_sgd(X_train, t_train, eta, lmb, 200, 50)
         # make the prediction and convert it into 0 if the sigmoid function is lower than 0.5, and 1 otherwise
         train_pred = np.where(sigmoid(X_train @ betas) < 0.5, 0, 1)
         test_pred = np.where(sigmoid(X_test @ betas) < 0.5, 0, 1)
         train_accuracy[i,j] = metrics.accuracy_score(t_train, train_pred)
         test_accuracy[i,j] = metrics.accuracy_score(t_test, test_pred)
-
+        
+        # find the best prediction and best eta and lambda
+        if test_accuracy[i,j] > test_max_acc:
+            test_max_acc = test_accuracy[i,j]
+            best_test_pred = test_pred
+            best_eta = eta
+            best_lambda = lmb
 
 fig, ax = plt.subplots(figsize = (8, 8))
-sns.heatmap(train_accuracy, annot = True, ax = ax, cmap = "viridis")
+sns.heatmap(train_accuracy, annot = True, ax = ax, cmap = "magma")
 ax.set_title("Training accuracy - Logistic Regression")
-ax.set_ylabel("Eta")
-ax.set_xlabel("Regularization parameter")
+ax.set_ylabel("$\log_{10}\eta$")
+ax.set_yticklabels(np.log10(eta_vals))
+ax.set_xlabel("$\log_{10}\lambda$")
+ax.set_xticklabels(np.log10(lmb_vals))
 plt.show()
 
 print(test_accuracy)
 fig, ax = plt.subplots(figsize = (8, 8))
-sns.heatmap(test_accuracy, annot = True, ax = ax, cmap = "viridis")
+sns.heatmap(test_accuracy, annot = True, ax = ax, cmap = "magma")
 ax.set_title("Test accuracy - Logistic Regression")
-ax.set_ylabel("Eta")
-ax.set_xlabel("Regularization parameter")
+ax.set_ylabel("$\log_{10}\eta$")
+ax.set_yticklabels(np.log10(eta_vals))
+ax.set_xlabel("$\log_{10}\lambda$")
+ax.set_xticklabels(np.log10(lmb_vals))
+plt.savefig("log_reg_heatmap.png")
 plt.show()
 
 print("Maximum train accuracy:", np.max(train_accuracy))
-print("Maximum text accuracy:", np.max(test_accuracy))
+print("Maximum text accuracy:", test_max_acc)
 
 
-# Now, do the same but wuth scikit-learn's logistic regression functionality
+# plot the confusion matrix 
+ConfusionMatrixDisplay.from_predictions(t_test, best_test_pred, normalize = "true")
+plt.title("Confusion matrix - Logistic Regression")
+plt.savefig("logreg_confusion.png")
+plt.show()
 
-train_accuracy_sl = np.zeros((len(eta_vals), len(lmb_vals)))
-test_accuracy_sl = np.zeros((len(eta_vals), len(lmb_vals)))
 
-for i, eta in enumerate(eta_vals):
-    for j, lmb in enumerate(lmb_vals):
-        betas = logistic_regression_sgd(X_train, t_train, eta, lmb, 200, 15)
-        # make the prediction and convert it into 0 if the sigmoid function is lower than 0.5, and 1 otherwise
-        train_pred = np.where(sigmoid(X_train @ betas) < 0.5, 0, 1)
-        test_pred = np.where(sigmoid(X_test @ betas) < 0.5, 0, 1)
-        train_accuracy_sl[i,j] = metrics.accuracy_score(t_train, train_pred)
-        test_accuracy_sl[i,j] = metrics.accuracy_score(t_test, test_pred)
 
-print("Maximum train accuracy scikit-learn:", np.max(train_accuracy_sl))
-print("Maximum text accuracy scikit-learn:", np.max(test_accuracy_sl))
+# Now, do the same but with scikit-learn's logistic regression functionality
+model = LogisticRegression()
+model.fit(X_train, t_train)
+
+train_pred_sl = model.predict(X_train)
+test_pred_sl = model.predict(X_test)
+train_accuracy_sl = metrics.accuracy_score(t_train, train_pred_sl)
+test_accuracy_sl = metrics.accuracy_score(t_test, test_pred_sl)
+
+print("Maximum train accuracy scikit-learn:", train_accuracy_sl)
+print("Maximum text accuracy scikit-learn:", test_accuracy_sl)
+
+# plot the confusion matrix
+ConfusionMatrixDisplay.from_predictions(t_test, test_pred_sl, normalize = "true")
+plt.title("Confusion matrix - Logistic Regression (scikit-learn)")
+plt.savefig("scikit_confusion.png")
+plt.show()
