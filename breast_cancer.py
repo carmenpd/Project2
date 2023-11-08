@@ -7,7 +7,9 @@ from FFNN_classification import *
 from func_autograd import *
 import seaborn as sns
 import matplotlib.pyplot as plt
-  
+from sklearn.metrics import ConfusionMatrixDisplay
+
+
 def to_categorical_numpy(integer_vector):
     n_inputs = len(integer_vector)
     n_categories = np.max(integer_vector) + 1
@@ -63,13 +65,14 @@ train_accuracy = np.zeros((len(eta_vals), len(lmbd_vals)))
 test_accuracy = np.zeros((len(eta_vals), len(lmbd_vals)))
 train_r2 = np.zeros((len(eta_vals), len(lmbd_vals)))
 test_r2 = np.zeros((len(eta_vals), len(lmbd_vals)))
+test_max_acc = 0
 
 for i, eta in enumerate(eta_vals):
     for j, lmbd in enumerate(lmbd_vals): 
         classification.reset_weights() # reset weights such that previous runs or reruns don't affect the weights
 
         scheduler = Adam(eta=eta, rho=0.9, rho2=0.999)
-        scores = classification.fit(X_train, t_train, scheduler, epochs = 100, batches=2, lam=lmbd)
+        scores = classification.fit(X_train, t_train, scheduler, epochs = 200, batches=20, lam=lmbd)
 
         pred_train = classification.predict(X_train)
         train_accuracy[i, j] = metrics.accuracy_score(t_train, pred_train)
@@ -78,6 +81,13 @@ for i, eta in enumerate(eta_vals):
         pred_test = classification.predict(X_test)
         test_accuracy[i, j] = metrics.accuracy_score(t_test, pred_test)
         test_r2[i, j] = metrics.r2_score(t_test, pred_test)
+
+        # find the best prediction and best eta and lambda
+        if test_accuracy[i,j] > test_max_acc:
+            test_max_acc = test_accuracy[i,j]
+            best_test_pred = pred_test
+            best_eta = eta
+            best_lambda = lmbd
 
 fig, ax = plt.subplots(figsize = (8, 8))
 sns.heatmap(train_accuracy, annot = True, ax = ax, cmap = "viridis")
@@ -108,5 +118,9 @@ ax.set_xlabel("$\lambda$")
 plt.show()
 
 
-print(np.min(train_accuracy))
-print(np.min(test_accuracy))
+print("Maximum training accuracy:", np.max(train_accuracy))
+print("Maximum test accuracy:",np.max(test_accuracy))
+
+# plot the confusion matrix 
+#ConfusionMatrixDisplay.from_predictions(t_test, best_test_pred)
+#plt.show()
