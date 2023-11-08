@@ -42,13 +42,15 @@ class FFNN:
         hidden_func: Callable = sigmoid,
         output_func: Callable = lambda x: x,
         cost_func: Callable = CostOLS,
-        seed: int = None):
+        seed: int = None,
+        use_Xavier_Glorot_weights: bool = False):
         
         self.dimensions = dimensions
         self.hidden_func = hidden_func
         self.output_func = output_func
         self.cost_func = cost_func
         self.seed = seed
+        self.XG_bool = use_Xavier_Glorot_weights
         self.weights = list()
         self.schedulers_weight = list()
         self.schedulers_bias = list()
@@ -266,6 +268,8 @@ class FFNN:
                 self.dimensions[i] + 1, self.dimensions[i + 1]
             )
             weight_array[0, :] = np.random.randn(self.dimensions[i + 1]) * 0.01
+            if self.XG_bool:
+                weight_array = weight_array * (np.sqrt(6)/np.sqrt(self.dimensions[i] + self.dimensions[i+1]))
 
             self.weights.append(weight_array)
 
