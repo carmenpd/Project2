@@ -14,6 +14,8 @@ def create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, b
     train_r2 = np.zeros((len(eta_vals), len(lmbd_vals)))
     test_r2 = np.zeros((len(eta_vals), len(lmbd_vals)))
 
+    linear_regression = FFNN(layers, hidden_func=sigmoid, cost_func=cost_func, output_func=identity)
+
     for i, eta in enumerate(eta_vals):
         for j, lmbd in enumerate(lmbd_vals): 
             linear_regression.reset_weights() # reset weights such that previous runs or reruns don't affect the weights
@@ -57,12 +59,13 @@ def plot_activation_func_comparison(X_train, X_test, target, n_epochs, batches, 
             'marker': '*',
             'color': 'orange'
         },
-        'Identity': {
-            'func': identity,
+        'Hyperbolic tangent': {
+            'func': tanh,
             'marker': '+',
             'color': 'gray'
         },
     }
+    sns.set()
     for key in activation_func_dict.keys():
         # activation_func = activation_func_dict[key]['func']
         func = activation_func_dict[key]['func']
@@ -72,16 +75,18 @@ def plot_activation_func_comparison(X_train, X_test, target, n_epochs, batches, 
         scores = linear_regression.fit(X_train, target, scheduler, epochs=n_epochs, batches=batches, lam=lmbd)
         pred = linear_regression.predict(X_test)
         plt.scatter(X_test[:,0], pred, c=activation_func_dict[key]['color'], marker=activation_func_dict[key]['marker'], label=key, zorder=10)
+        mse = mean_squared_error(pred, true_test)
+        r2 = r2_score(true_test, pred)
+        print(f"\nActivation function: {key}\n\tMSE = \t{mse:.4f}\tR^2 = \t{r2:.4f}")
 
     # Plot
-    sns.set()
     plt.plot(X[:,0], y, 'ro', label='Data')
     plt.plot(X[:,0], y_true, 'b-', label='True')
     plt.legend()
     plt.show()
 
-def compare_model_and_sklearn(X_train, X_test, target_train, target_test, true_train, true_test, layers, lmbd, eta, batches, n_epochs):
-    M = int(X_train.shape[0] // batches)
+def compare_model_and_sklearn(X_train, X_test, target_train, true_test, layers, lmbd, eta, batches, n_epochs):
+    batch_size = int(X_train.shape[0] // batches)
 
     # Out model
     our_model = FFNN(layers, hidden_func=sigmoid, cost_func=cost_func, output_func=identity)
@@ -91,12 +96,11 @@ def compare_model_and_sklearn(X_train, X_test, target_train, target_test, true_t
 
     # SciKit Learn model
     clf = MLPRegressor(hidden_layer_sizes=layers[1:-1], activation='logistic', solver='adam', 
-                       alpha=lmbd, batch_size=M, learning_rate_init=eta, max_iter=400, 
+                       alpha=lmbd, batch_size=batch_size, learning_rate_init=eta, max_iter=400, 
                        shuffle=False, tol=0.001, verbose=False,
                        beta_1=0.9, beta_2=0.999, epsilon=10e-8)
-
     clf.fit(X_train, target_train.ravel())
-    
+
     # Predict
     pred = our_model.predict(X_test)
     pred_sklearn = clf.predict(X_test)
@@ -104,10 +108,11 @@ def compare_model_and_sklearn(X_train, X_test, target_train, target_test, true_t
     # Score
     score = mean_squared_error(pred, true_test)
     score_sklearn = mean_squared_error(pred_sklearn, true_test)
-    print(f"\nOur model score: {score}")
-    print(f"\nSciKit Learn score: {score_sklearn}")
+    r2_our = r2_score(true_test, pred)
+    r2_sklearn = r2_score(true_test, pred_sklearn)
 
-
+    print(f"\nOur model score: \tMSE\t{score:.4f}\t R^2\t{r2_our:.4f}")
+    print(f"SciKit Learn score: \tMSE\t{score_sklearn:.4f}\t R^2\t{r2_sklearn:.4f}")
 
     # Plot
     sns.set()
@@ -116,19 +121,61 @@ def compare_model_and_sklearn(X_train, X_test, target_train, target_test, true_t
     plt.scatter(X_test[:,0], pred, c='g', marker='v', label='Our model', zorder=10)
     plt.scatter(X_test[:,0], pred_sklearn, c='k', marker='^', label='SciKit Learn model', zorder=10)
     plt.legend()
+    # plt.title(r'$f(x) = \frac{1}{5}x^4 - \frac{4}{5}x^3 - \frac{1}{4}x^2$')
+    plt.xlabel('x')
+    plt.ylabel('f(x)')
     plt.show()
 
+def compare_weight_inits(X_train, X_test, target_train, true_test, eta, lmbd, batches, n_epochs):
+    # Compare weight initializations using normal distribution and Xavier Glorot initialization
+    
+    # Normal distribution
+    ordinary_weight_model = FFNN(layers, hidden_func=sigmoid, cost_func=cost_func, output_func=identity)
+    ordinary_weight_model.reset_weights()
+    scheduler = Adam(eta=eta, rho=0.9, rho2=0.999)
+    scores = ordinary_weight_model.fit(X_train, target_train, scheduler, epochs=n_epochs, batches=batches, lam=lmbd)
+    pred = ordinary_weight_model.predict(X_test)
 
+    # Xavier Glorot initialization
+    XG_weight_model = FFNN(layers, hidden_func=sigmoid, cost_func=cost_func, output_func=identity, use_Xavier_Glorot_weights=True)
+    XG_weight_model.reset_weights()
+    scheduler = Adam(eta=eta, rho=0.9, rho2=0.999)
+    scores = XG_weight_model.fit(X_train, target_train, scheduler, epochs=n_epochs, batches=batches, lam=lmbd)
+    pred_XG = XG_weight_model.predict(X_test)
+
+    # Scores
+    score = mean_squared_error(pred, true_test)
+    score_XG = mean_squared_error(pred_XG, true_test)
+    r2 = r2_score(true_test, pred)
+    r2_XG = r2_score(true_test, pred_XG)
+
+    print(f"\nNormal weight initialization score: \tMSE\t{score:.4f}\t R^2\t{r2:.4f}")
+    print(f"Xavier Glorot initialization score: \tMSE\t{score_XG:.4f}\t R^2\t{r2_XG:.4f}")
+
+    # Plot
+    sns.set()
+    plt.plot(X[:,0], y, 'ro', label='Data')
+    plt.plot(X[:,0], y_true, 'b-', label='True')
+    plt.scatter(X_test[:,0], pred, c='g', marker='v', label='Normal weight initialization', zorder=10)
+    plt.scatter(X_test[:,0], pred_XG, c='k', marker='^', label='Xavier Glorot initialization', zorder=10)
+    plt.legend()
+    # plt.title(r'$f(x) = \frac{1}{5}x^4 - \frac{4}{5}x^3 - \frac{1}{4}x^2$')
+    plt.xlabel('x')
+    plt.ylabel('f(x)')
+    plt.show()
+    pass
+
+rng_seed = 2023
 n = 100
 x = np.linspace(-3, 3, n)
 noise = np.random.normal(0, 1.0, n)
-y_true = 0.2*x**4 - 1*x**3 - 0.25*x**2#  + 2*np.sin(x*np.pi) + 4*np.sin(x*np.pi*0.7 + 0.3)
+y_true = 0.2*x**4 - 0.8*x**3 - 0.25*x**2#  + 2*np.sin(x*np.pi) + 4*np.sin(x*np.pi*0.7 + 0.3)
 # y_true = np.exp(-x**2)*np.sin(x*np.pi)
 y = y_true + noise
 X = np.column_stack((x.reshape(-1, 1), y.reshape(-1, 1)))
 
 # Split and scale
-X_train, X_test, t_train, t_test, true_train, true_test = train_test_split(X, y.reshape(-1, 1), y_true.reshape(-1, 1), test_size=0.2)
+X_train, X_test, t_train, t_test, true_train, true_test = train_test_split(X, y.reshape(-1, 1), y_true.reshape(-1, 1), test_size=0.2, random_state=rng_seed)
 
 # Model
 input_nodes = X_train.shape[1]
@@ -136,19 +183,14 @@ hidden_nodes_1 = 10
 hidden_nodes_2 = 5
 output_nodes = t_train.shape[1]
 layers = (input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes)
-n_epochs = 400
+n_epochs = 500
 batches = 20
 cost_func = CostOLS
 activation_func = sigmoid
-linear_regression = FFNN(layers, hidden_func=activation_func, cost_func=cost_func, output_func=identity)
-
-# Train and create heatmap
 eta_vals = np.logspace(-5, -2, 4)
 lmbd_vals = np.logspace(-5, -1, 5)
-# create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, batches)
 
-# Train with different activation functions
-# plot_activation_func_comparison(X_train, X_test, t_train, n_epochs, batches, eta=0.01, lmbd=0.01)
-
-# Compare our model with SciKit Learn
-compare_model_and_sklearn(X_train, X_test, t_train, t_test, true_train, true_test, layers, lmbd=0.01, eta=0.01, batches=batches, n_epochs=n_epochs)
+create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, batches)
+plot_activation_func_comparison(X_train, X_test, t_train, n_epochs, batches, eta=0.01, lmbd=0.01)# Train with different activation functions
+compare_model_and_sklearn(X_train, X_test, t_train, true_test, layers, lmbd=0.01, eta=0.01, batches=batches, n_epochs=n_epochs) # Compare our model with SciKit Learn
+compare_weight_inits(X_train, X_test, t_train, true_test, eta=0.01, lmbd=0.01, batches=batches, n_epochs=n_epochs) # Compare weight initializations
