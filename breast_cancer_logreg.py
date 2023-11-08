@@ -41,7 +41,7 @@ X = df[:, :-1]
 y = df[:, -1].astype(int)  # Convert y values to integer type
 y = np.where(y == 2, 0, 1) # Map 2 to 0 and 4 to 1. If this is not done, we get 5 categories (0, 1, 2, 3, 4)
 
-X_train, X_test, t_train, t_test = train_test_split(X, y, random_state = 42)
+X_train, X_test, t_train, t_test = train_test_split(X, y, test_size = 0.33, random_state = 42)
 
 eta_vals = np.logspace(-5, -1, 5)
 lmb_vals = np.logspace(-5, -1, 5)
@@ -68,9 +68,9 @@ for i, eta in enumerate(eta_vals):
 fig, ax = plt.subplots(figsize = (8, 8))
 sns.heatmap(train_accuracy, annot = True, ax = ax, cmap = "magma")
 ax.set_title("Training accuracy - Logistic Regression")
-ax.set_ylabel("Eta")
+ax.set_ylabel("$\log_{10}\eta$")
 ax.set_yticklabels(np.log10(eta_vals))
-ax.set_xlabel("Regularization parameter")
+ax.set_xlabel("$\log_{10}\lambda$")
 ax.set_xticklabels(np.log10(lmb_vals))
 plt.show()
 
@@ -78,10 +78,11 @@ print(test_accuracy)
 fig, ax = plt.subplots(figsize = (8, 8))
 sns.heatmap(test_accuracy, annot = True, ax = ax, cmap = "magma")
 ax.set_title("Test accuracy - Logistic Regression")
-ax.set_ylabel("Eta")
+ax.set_ylabel("$\log_{10}\eta$")
 ax.set_yticklabels(np.log10(eta_vals))
-ax.set_xlabel("Regularization parameter")
+ax.set_xlabel("$\log_{10}\lambda$")
 ax.set_xticklabels(np.log10(lmb_vals))
+plt.savefig("log_reg_heatmap.png")
 plt.show()
 
 print("Maximum train accuracy:", np.max(train_accuracy))
@@ -89,8 +90,9 @@ print("Maximum text accuracy:", test_max_acc)
 
 
 # plot the confusion matrix 
-ConfusionMatrixDisplay.from_predictions(t_test, best_test_pred, normalize = "all")
+ConfusionMatrixDisplay.from_predictions(t_test, best_test_pred, normalize = "true")
 plt.title("Confusion matrix - Logistic Regression")
+plt.savefig("logreg_confusion.png")
 plt.show()
 
 
@@ -108,6 +110,7 @@ print("Maximum train accuracy scikit-learn:", train_accuracy_sl)
 print("Maximum text accuracy scikit-learn:", test_accuracy_sl)
 
 # plot the confusion matrix
-ConfusionMatrixDisplay.from_predictions(t_test, test_pred_sl, normalize = "all")
+ConfusionMatrixDisplay.from_predictions(t_test, test_pred_sl, normalize = "true")
 plt.title("Confusion matrix - Logistic Regression (scikit-learn)")
+plt.savefig("scikit_confusion.png")
 plt.show()
