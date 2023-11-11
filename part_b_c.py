@@ -8,6 +8,42 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.neural_network import MLPRegressor
 import seaborn as sns
 
+def output_func_compare(X_train, X_test, target_train, eta, lmbd, n_epochs, batches):
+    # Compare output functions
+
+    # Sigmoid
+    sigmoid_model = FFNN(layers, hidden_func=sigmoid, cost_func=cost_func, output_func=sigmoid)
+    sigmoid_model.reset_weights()
+    scheduler = Adam(eta=eta, rho=0.9, rho2=0.999)
+    scores = sigmoid_model.fit(X_train, target_train, scheduler, epochs=n_epochs, batches=batches, lam=lmbd)
+    pred_sigmoid = sigmoid_model.predict(X_test)
+
+    # Identity
+    identity_model = FFNN(layers, hidden_func=sigmoid, cost_func=cost_func, output_func=identity)
+    identity_model.reset_weights()
+    scheduler = Adam(eta=eta, rho=0.9, rho2=0.999)
+    scores = identity_model.fit(X_train, target_train, scheduler, epochs=n_epochs, batches=batches, lam=lmbd)
+    pred_identity = identity_model.predict(X_test)
+
+    # Metrics
+    mse_sigmoid = mean_squared_error(pred_sigmoid, true_test)
+    mse_identity = mean_squared_error(pred_identity, true_test)
+    r2_sigmoid = r2_score(true_test, pred_sigmoid)
+    r2_identity = r2_score(true_test, pred_identity)
+    print(f"\nSigmoid score: \tMSE\t{mse_sigmoid:.4f}\t R^2\t{r2_sigmoid:.4f}")
+    print(f"Identity score: \tMSE\t{mse_identity:.4f}\t R^2\t{r2_identity:.4f}")
+
+    # Plot
+    sns.set()
+    plt.plot(X[:,0], y, 'ro', label='Data')
+    plt.plot(X[:,0], y_true, 'b-', label='True')
+    plt.scatter(X_test[:,0], pred_sigmoid, c='g', marker='v', label='Sigmoid', zorder=10)
+    plt.scatter(X_test[:,0], pred_identity, c='k', marker='^', label='Identity', zorder=10)
+    plt.legend()
+    plt.xlabel('x')
+    plt.ylabel('f(x)')
+    plt.show()
+
 def create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, batches):
     train_mse = np.zeros((len(eta_vals), len(lmbd_vals)))
     test_mse = np.zeros((len(eta_vals), len(lmbd_vals)))
@@ -171,8 +207,7 @@ rng_seed = 2023
 n = 100
 x = np.linspace(-3, 3, n)
 noise = np.random.normal(0, 1.0, n)
-y_true = 0.2*x**4 - 0.8*x**3 - 0.25*x**2#  + 2*np.sin(x*np.pi) + 4*np.sin(x*np.pi*0.7 + 0.3)
-# y_true = np.exp(-x**2)*np.sin(x*np.pi)
+y_true = 0.2*x**4 - 0.8*x**3 - 0.25*x**2
 y = y_true + noise
 X = np.column_stack((x.reshape(-1, 1), y.reshape(-1, 1)))
 
@@ -192,7 +227,8 @@ activation_func = sigmoid
 eta_vals = np.logspace(-5, -2, 4)
 lmbd_vals = np.logspace(-5, -1, 5)
 
-# create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, batches)
-plot_activation_func_comparison(X_train, X_test, t_train, n_epochs, batches, eta=0.01, lmbd=0.01)# Train with different activation functions
+# create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, batches) # Create heatmap of MSE for different learning rates and lambdas
+output_func_compare(X_train, X_test, t_train, eta=0.01, lmbd=0.01, n_epochs=n_epochs, batches=batches) # Compare output functions
+# plot_activation_func_comparison(X_train, X_test, t_train, n_epochs, batches, eta=0.01, lmbd=0.01)# Train with different activation functions
 # compare_model_and_sklearn(X_train, X_test, t_train, true_test, layers, lmbd=0.01, eta=0.01, batches=batches, n_epochs=n_epochs) # Compare our model with SciKit Learn
 # compare_weight_inits(X_train, X_test, t_train, true_test, eta=0.01, lmbd=0.01, batches=batches, n_epochs=n_epochs) # Compare weight initializations
