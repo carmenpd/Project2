@@ -83,6 +83,8 @@ def plot_activation_func_comparison(X_train, X_test, target, n_epochs, batches, 
     plt.plot(X[:,0], y, 'ro', label='Data')
     plt.plot(X[:,0], y_true, 'b-', label='True')
     plt.legend()
+    plt.xlabel('x')
+    plt.ylabel('f(x)')
     plt.show()
 
 def compare_model_and_sklearn(X_train, X_test, target_train, true_test, layers, lmbd, eta, batches, n_epochs):
@@ -190,7 +192,7 @@ activation_func = sigmoid
 eta_vals = np.logspace(-5, -2, 4)
 lmbd_vals = np.logspace(-5, -1, 5)
 
-create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, batches)
+# create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, batches)
 plot_activation_func_comparison(X_train, X_test, t_train, n_epochs, batches, eta=0.01, lmbd=0.01)# Train with different activation functions
-compare_model_and_sklearn(X_train, X_test, t_train, true_test, layers, lmbd=0.01, eta=0.01, batches=batches, n_epochs=n_epochs) # Compare our model with SciKit Learn
-compare_weight_inits(X_train, X_test, t_train, true_test, eta=0.01, lmbd=0.01, batches=batches, n_epochs=n_epochs) # Compare weight initializations
+# compare_model_and_sklearn(X_train, X_test, t_train, true_test, layers, lmbd=0.01, eta=0.01, batches=batches, n_epochs=n_epochs) # Compare our model with SciKit Learn
+# compare_weight_inits(X_train, X_test, t_train, true_test, eta=0.01, lmbd=0.01, batches=batches, n_epochs=n_epochs) # Compare weight initializations
