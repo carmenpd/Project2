@@ -164,31 +164,41 @@ def compare_model_and_sklearn(X_train, X_test, target_train, true_test, layers, 
     plt.ylabel('f(x)')
     plt.show()
 
-def compare_weight_inits(X_train, X_test, target_train, true_test, eta, lmbd, batches, n_epochs):
+def compare_weight_inits(X_train, X_test, target_train, true_test, eta, lmbd, batches, n_epochs, hidden_activation=sigmoid, plot_title = None):
     # Compare weight initializations using normal distribution and Xavier Glorot initialization
     
     # Normal distribution
-    ordinary_weight_model = FFNN(layers, hidden_func=sigmoid, cost_func=cost_func, output_func=identity)
+    ordinary_weight_model = FFNN(layers, hidden_func=hidden_activation, cost_func=cost_func, output_func=identity)
     ordinary_weight_model.reset_weights()
     scheduler = Adam(eta=eta, rho=0.9, rho2=0.999)
     scores = ordinary_weight_model.fit(X_train, target_train, scheduler, epochs=n_epochs, batches=batches, lam=lmbd)
     pred = ordinary_weight_model.predict(X_test)
 
     # Xavier Glorot initialization
-    XG_weight_model = FFNN(layers, hidden_func=sigmoid, cost_func=cost_func, output_func=identity, use_Xavier_Glorot_weights=True)
+    XG_weight_model = FFNN(layers, hidden_func=hidden_activation, cost_func=cost_func, output_func=identity, weight_scheme='xavier')
     XG_weight_model.reset_weights()
     scheduler = Adam(eta=eta, rho=0.9, rho2=0.999)
     scores = XG_weight_model.fit(X_train, target_train, scheduler, epochs=n_epochs, batches=batches, lam=lmbd)
     pred_XG = XG_weight_model.predict(X_test)
+
+    # He initialization
+    He_weight_model = FFNN(layers, hidden_func=hidden_activation, cost_func=cost_func, output_func=identity, weight_scheme='he')
+    He_weight_model.reset_weights()
+    scheduler = Adam(eta=eta, rho=0.9, rho2=0.999)
+    scores = He_weight_model.fit(X_train, target_train, scheduler, epochs=n_epochs, batches=batches, lam=lmbd)
+    pred_He = He_weight_model.predict(X_test)
 
     # Scores
     score = mean_squared_error(pred, true_test)
     score_XG = mean_squared_error(pred_XG, true_test)
     r2 = r2_score(true_test, pred)
     r2_XG = r2_score(true_test, pred_XG)
+    score_he = mean_squared_error(pred_He, true_test)
+    r2_he = r2_score(true_test, pred_He)
 
     print(f"\nNormal weight initialization score: \tMSE\t{score:.4f}\t R^2\t{r2:.4f}")
     print(f"Xavier Glorot initialization score: \tMSE\t{score_XG:.4f}\t R^2\t{r2_XG:.4f}")
+    print(f"He initialization score: \t\tMSE\t{score_he:.4f}\t R^2\t{r2_he:.4f}")
 
     # Plot
     sns.set()
@@ -196,8 +206,9 @@ def compare_weight_inits(X_train, X_test, target_train, true_test, eta, lmbd, ba
     plt.plot(X[:,0], y_true, 'b-', label='True')
     plt.scatter(X_test[:,0], pred, c='g', marker='v', label='Normal weight initialization', zorder=10)
     plt.scatter(X_test[:,0], pred_XG, c='k', marker='^', label='Xavier Glorot initialization', zorder=10)
+    plt.scatter(X_test[:,0], pred_He, c='orange', marker='*', label='He initialization', zorder=10)
     plt.legend()
-    # plt.title(r'$f(x) = \frac{1}{5}x^4 - \frac{4}{5}x^3 - \frac{1}{4}x^2$')
+    plt.title(f"{plot_title}")
     plt.xlabel('x')
     plt.ylabel('f(x)')
     plt.show()
@@ -228,7 +239,10 @@ eta_vals = np.logspace(-5, -2, 4)
 lmbd_vals = np.logspace(-5, -1, 5)
 
 # create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, batches) # Create heatmap of MSE for different learning rates and lambdas
-output_func_compare(X_train, X_test, t_train, eta=0.01, lmbd=0.01, n_epochs=n_epochs, batches=batches) # Compare output functions
+# output_func_compare(X_train, X_test, t_train, eta=0.01, lmbd=0.01, n_epochs=n_epochs, batches=batches) # Compare output functions
 # plot_activation_func_comparison(X_train, X_test, t_train, n_epochs, batches, eta=0.01, lmbd=0.01)# Train with different activation functions
 # compare_model_and_sklearn(X_train, X_test, t_train, true_test, layers, lmbd=0.01, eta=0.01, batches=batches, n_epochs=n_epochs) # Compare our model with SciKit Learn
-# compare_weight_inits(X_train, X_test, t_train, true_test, eta=0.01, lmbd=0.01, batches=batches, n_epochs=n_epochs) # Compare weight initializations
+
+hidden_func_dict = {'Sigmoid': sigmoid, 'ReLU': RELU, 'Leaky ReLU': LRELU, 'Hyperbolic tangent': tanh}
+for key in hidden_func_dict.keys():
+    compare_weight_inits(X_train, X_test, t_train, true_test, eta=0.01, lmbd=0.01, batches=batches, n_epochs=n_epochs, hidden_activation=hidden_func_dict[key], plot_title=key) # Compare weight initializations

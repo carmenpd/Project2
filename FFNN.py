@@ -34,6 +34,8 @@ class FFNN:
         III output_func (Callable): The activation function for the output layer
         IV  cost_func (Callable): Our cost function
         V   seed (int): Sets random seed, makes results reproducible
+        VI  weight_scheme (str): Sets weight scheme, either "None", "xavier" or "he". 
+            If None, weights are initialized with a standard normal distribution.
     """
 
     def __init__(
@@ -43,14 +45,14 @@ class FFNN:
         output_func: Callable = lambda x: x,
         cost_func: Callable = CostOLS,
         seed: int = None,
-        use_Xavier_Glorot_weights: bool = False):
+        weight_scheme: str = None):
         
         self.dimensions = dimensions
         self.hidden_func = hidden_func
         self.output_func = output_func
         self.cost_func = cost_func
         self.seed = seed
-        self.XG_bool = use_Xavier_Glorot_weights
+        self.weight_scheme = weight_scheme
         self.weights = list()
         self.schedulers_weight = list()
         self.schedulers_bias = list()
@@ -264,12 +266,19 @@ class FFNN:
 
         self.weights = list()
         for i in range(len(self.dimensions) - 1):
-            weight_array = np.random.randn(
-                self.dimensions[i] + 1, self.dimensions[i + 1]
-            )
-            weight_array[0, :] = np.random.randn(self.dimensions[i + 1]) * 0.01
-            if self.XG_bool:
-                weight_array = weight_array * (np.sqrt(6)/np.sqrt(self.dimensions[i] + self.dimensions[i+1]))
+            if self.weight_scheme == "xavier":
+                xg_std = np.sqrt(2/(self.dimensions[i] + self.dimensions[i+1]))
+                weight_array = np.random.normal(0, xg_std, (self.dimensions[i] + 1, self.dimensions[i + 1]))
+                weight_array[0, :] = np.random.normal(0, xg_std, self.dimensions[i + 1]) * 0.01
+
+            elif self.weight_scheme == "he":
+                he_std = np.sqrt(4/(self.dimensions[i] + self.dimensions[i+1]))
+                weight_array = np.random.normal(0, he_std, (self.dimensions[i] + 1, self.dimensions[i + 1]))
+                weight_array[0, :] = np.random.normal(0, he_std, self.dimensions[i + 1]) * 0.01
+            
+            else:
+                weight_array = np.random.randn(self.dimensions[i] + 1, self.dimensions[i + 1])
+                weight_array[0, :] = np.random.randn(self.dimensions[i + 1]) * 0.01
 
             self.weights.append(weight_array)
 
