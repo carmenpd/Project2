@@ -5,9 +5,9 @@ from sklearn.metrics import mean_squared_error, r2_score
 from autograd import grad
 
 class GradientDescend:
-    def __init__(self, optimizer="gd", learning_rate=0.01, max_epochs=1000, batch_size=5,
+    def __init__(self, optimizer="gd", learning_rate=0.001, max_epochs=1000, batch_size=5,
                  learning_rate_decay=0.9, patience=20, delta_momentum=0.3, lmb=0.001,
-                 tol=1e-4, change=0.0 ,delta=  1e-8, rho =0.99, beta1 = 0.9 , beta2 = 0.999 , momentum=True,
+                 tol=1e-4, change=0.0 ,delta=  1e-8, rho =0.9, beta1 = 0.9 , beta2 = 0.99 , momentum=True,
                  learning_rate_decay_flag=False, Ridge=False , method = None):
         self.optimizer = optimizer
         self.learning_rate = learning_rate
