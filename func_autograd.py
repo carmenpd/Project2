@@ -21,7 +21,7 @@ class GradientDescend:
         self.beta2 = beta2
         self.delta = delta
         self.method = method
-        self.batch_size = batch_size
+        self.batch_size = int(batch_size)
         self.learning_rate_decay = learning_rate_decay
         self.patience = patience
         self.delta_momentum = delta_momentum if momentum else 0
