@@ -5,7 +5,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 from autograd import grad
 
 class GradientDescend:
-    def __init__(self, optimizer="gd", learning_rate=0.01, max_epochs=100, batch_size=5,
+    def __init__(self, optimizer="gd", learning_rate=0.01, max_epochs=1000, batch_size=5,
                  learning_rate_decay=0.9, patience=20, delta_momentum=0.3, lmb=0.001,
                  tol=1e-4, change=0.0 ,delta=  1e-8, rho =0.99, beta1 = 0.9 , beta2 = 0.999 , momentum=True,
                  learning_rate_decay_flag=False, Ridge=False , method = None):
@@ -49,7 +49,7 @@ class GradientDescend:
         return cost
 
     def gradient_descent_step(self, X, y, thetas):
-        gradient = grad(self.cost_function, 2)(X, y, thetas)
+        gradient = self.compute_gradient(X, y, thetas)
         change = self.learning_rate * gradient + self.delta_momentum * self.change
         thetas -= change
         self.change = change
