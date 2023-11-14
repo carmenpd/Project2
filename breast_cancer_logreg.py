@@ -29,17 +29,16 @@ def logistic_regression_sgd(X, y, eta, regularization, n_epochs, size_minibach):
     return beta
 
 # fetch dataset 
-breast_cancer_wisconsin_original = fetch_ucirepo(id=15)
-  
+breast_cancer_wisconsin_original = pd.read_csv("wdbc.data", delimiter=',')  
 # data (as pandas dataframes) 
-X = breast_cancer_wisconsin_original.data.features
-y = breast_cancer_wisconsin_original.data.targets
+X = breast_cancer_wisconsin_original.drop(breast_cancer_wisconsin_original.columns[1], axis = 1)
+y = breast_cancer_wisconsin_original.iloc[:,1]
 df = pd.DataFrame(np.column_stack((X,y)))
 df = df.dropna()
 df = np.array(df)
-X = df[:, :-1]
-y = df[:, -1].astype(int)  # Convert y values to integer type
-y = np.where(y == 2, 0, 1) # Map 2 to 0 and 4 to 1. If this is not done, we get 5 categories (0, 1, 2, 3, 4)
+#X = df[:, :-1]
+#y = df[:, -1].astype(int)  # Convert y values to integer type
+y = np.where(y == "B", 0, 1) # Map 2 to 0 and 4 to 1. If this is not done, we get 5 categories (0, 1, 2, 3, 4)
 
 X_train, X_test, t_train, t_test = train_test_split(X, y, test_size = 0.33, random_state = 42)
 
