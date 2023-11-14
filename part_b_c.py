@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.neural_network import MLPRegressor
 import seaborn as sns
+import pandas as pd
 
 def output_func_compare(X_train, X_test, target_train, eta, lmbd, n_epochs, batches):
     # Compare output functions
@@ -214,6 +215,78 @@ def compare_weight_inits(X_train, X_test, target_train, true_test, eta, lmbd, ba
     plt.show()
     pass
 
+def epoch_minibatch_gridsearch(X_train, X_test, t_train, t_test, layers, eta, lam):
+    #### Grid search for epochs and batches ####
+    n = 10
+    epoch_space = np.linspace(100, 1000, n)
+    batch_space = np.linspace(1, 10, n)
+    train_mse = np.zeros((n, n))
+    test_mse = np.zeros((n, n))
+    train_r2 = np.zeros((n, n))
+    test_r2 = np.zeros((n, n))
+    linear_regression = FFNN(layers, hidden_func=sigmoid, cost_func=cost_func, output_func=identity)
+    scheduler = Adam(eta=eta, rho=0.9, rho2=0.999)
+
+    # This is quite slow, btw
+    for i, epoch in enumerate(epoch_space):
+        for j, batch in enumerate(batch_space):
+            linear_regression.reset_weights()
+            score = linear_regression.fit(X_train, t_train, scheduler, epochs = int(epoch), batches=int(batch), lam=lam)
+            pred_train = linear_regression.predict(X_train)
+            train_mse[i, j] = mean_squared_error(pred_train, t_train)
+            train_r2[i, j] = r2_score(t_train, pred_train)
+            pred_test = linear_regression.predict(X_test)
+            test_mse[i, j] = mean_squared_error(pred_test, t_test)
+            test_r2[i, j] = r2_score(t_test, pred_test)
+
+    train_mse = pd.DataFrame(train_mse, index = epoch_space, columns = batch_space)
+    test_mse = pd.DataFrame(test_mse, index = epoch_space, columns = batch_space)
+    train_r2 = pd.DataFrame(train_r2, index = epoch_space, columns = batch_space)
+    test_r2 = pd.DataFrame(test_r2, index = epoch_space, columns = batch_space)
+
+    fig, ax = plt.subplots(figsize = (8, 8))
+    sns.heatmap(train_mse, annot = True, ax = ax, cmap = "magma" , fmt = ".4f")
+    ax.set_title("Training MSE")
+    # ax.set_ylabel("$\eta$")
+    # ax.set_xlabel("$\lambda$")
+    ax.set_ylabel("Epochs")
+    ax.set_xlabel("Batches")
+    plt.show()
+
+    fig, ax = plt.subplots(figsize = (8, 8))
+    sns.heatmap(test_mse, annot = True, ax = ax, cmap = "magma" , fmt = ".4f" )
+    ax.set_title("Test MSE")
+    # ax.set_ylabel("$\eta$")
+    # ax.set_xlabel("$\lambda$")
+    ax.set_ylabel("Epochs")
+    ax.set_xlabel("Batches")
+    plt.show()
+
+    fig, ax = plt.subplots(figsize = (8, 8))
+    sns.heatmap(train_r2, annot = True, ax = ax, cmap = "magma", fmt = ".4f")
+    ax.set_title("Training R2")
+    # ax.set_ylabel("$\eta$")
+    # ax.set_xlabel("$\lambda$")
+    ax.set_ylabel("Epochs")
+    ax.set_xlabel("Batches")
+    plt.show()
+
+    fig, ax = plt.subplots(figsize = (8, 8))
+    sns.heatmap(test_r2, annot = True, ax = ax, cmap = "magma", fmt = ".4f")
+    ax.set_title("Test R2")
+    # ax.set_ylabel("$\eta$")
+    # ax.set_xlabel("$\lambda$")
+    ax.set_ylabel("Epochs")
+    ax.set_xlabel("Batches")
+    plt.show()
+
+    print(np.min(train_mse))
+    print(np.min(test_mse))
+    print(np.max(train_r2))
+    print(np.max(test_r2))
+
+    print("r squared", train_r2)
+
 rng_seed = 2023
 n = 100
 x = np.linspace(-3, 3, n)
@@ -241,8 +314,8 @@ lmbd_vals = np.logspace(-5, -1, 5)
 # create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, batches) # Create heatmap of MSE for different learning rates and lambdas
 # output_func_compare(X_train, X_test, t_train, eta=0.01, lmbd=0.01, n_epochs=n_epochs, batches=batches) # Compare output functions
 # plot_activation_func_comparison(X_train, X_test, t_train, n_epochs, batches, eta=0.01, lmbd=0.01)# Train with different activation functions
-# compare_model_and_sklearn(X_train, X_test, t_train, true_test, layers, lmbd=0.01, eta=0.01, batches=batches, n_epochs=n_epochs) # Compare our model with SciKit Learn
+compare_model_and_sklearn(X_train, X_test, t_train, true_test, layers, lmbd=0.01, eta=0.01, batches=batches, n_epochs=n_epochs) # Compare our model with SciKit Learn
 
-hidden_func_dict = {'Sigmoid': sigmoid, 'ReLU': RELU, 'Leaky ReLU': LRELU, 'Hyperbolic tangent': tanh}
-for key in hidden_func_dict.keys():
-    compare_weight_inits(X_train, X_test, t_train, true_test, eta=0.01, lmbd=0.01, batches=batches, n_epochs=n_epochs, hidden_activation=hidden_func_dict[key], plot_title=key) # Compare weight initializations
+# hidden_func_dict = {'Sigmoid': sigmoid, 'ReLU': RELU, 'Leaky ReLU': LRELU, 'Hyperbolic tangent': tanh}
+# for key in hidden_func_dict.keys():
+#     compare_weight_inits(X_train, X_test, t_train, true_test, eta=0.01, lmbd=0.01, batches=batches, n_epochs=n_epochs, hidden_activation=hidden_func_dict[key], plot_title=key) # Compare weight initializations

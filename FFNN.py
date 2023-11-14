@@ -272,7 +272,7 @@ class FFNN:
                 weight_array[0, :] = np.random.normal(0, xg_std, self.dimensions[i + 1]) * 0.01
 
             elif self.weight_scheme == "he":
-                he_std = np.sqrt(4/(self.dimensions[i] + self.dimensions[i+1]))
+                he_std = np.sqrt(2/(self.dimensions[i]))
                 weight_array = np.random.normal(0, he_std, (self.dimensions[i] + 1, self.dimensions[i + 1]))
                 weight_array[0, :] = np.random.normal(0, he_std, self.dimensions[i + 1]) * 0.01
             
