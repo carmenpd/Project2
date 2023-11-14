@@ -27,8 +27,8 @@ def output_func_compare(X_train, X_test, target_train, eta, lmbd, n_epochs, batc
     pred_identity = identity_model.predict(X_test)
 
     # Metrics
-    mse_sigmoid = mean_squared_error(pred_sigmoid, true_test)
-    mse_identity = mean_squared_error(pred_identity, true_test)
+    mse_sigmoid = mean_squared_error(true_test, pred_sigmoid)
+    mse_identity = mean_squared_error(true_test, pred_identity)
     r2_sigmoid = r2_score(true_test, pred_sigmoid)
     r2_identity = r2_score(true_test, pred_identity)
     print(f"\nSigmoid score: \tMSE\t{mse_sigmoid:.4f}\t R^2\t{r2_sigmoid:.4f}")
@@ -45,7 +45,7 @@ def output_func_compare(X_train, X_test, target_train, eta, lmbd, n_epochs, batc
     plt.ylabel('f(x)')
     plt.show()
 
-def create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, batches):
+def create_eta_lambda_heatmap(X_train, X_test, t_train, eta_vals, lmbd_vals, n_epochs, batches):
     train_mse = np.zeros((len(eta_vals), len(lmbd_vals)))
     test_mse = np.zeros((len(eta_vals), len(lmbd_vals)))
     train_r2 = np.zeros((len(eta_vals), len(lmbd_vals)))
@@ -61,18 +61,48 @@ def create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, b
             scores = linear_regression.fit(X_train, t_train, scheduler, epochs=n_epochs, batches=batches, lam=lmbd)
 
             pred_train = linear_regression.predict(X_train)
-            train_mse[i, j] = mean_squared_error(pred_train, t_train)
-            train_r2[i, j] = r2_score(t_train, pred_train)
+            train_mse[i, j] = mean_squared_error(true_train, pred_train)
+            train_r2[i, j] = r2_score(true_train, pred_train)
             
             pred_test = linear_regression.predict(X_test)
-            test_mse[i, j] = mean_squared_error(pred_test, t_test)
-            test_r2[i, j] = r2_score(t_test , pred_test)
+            test_mse[i, j] = mean_squared_error(true_test, pred_test)
+            test_r2[i, j] = r2_score(true_test , pred_test)
 
-    # Plot MSE
+    # Plot MSE training
     sns.set()
     fig, ax = plt.subplots(figsize=(8,8))
-    sns.heatmap(test_mse, annot=True, ax=ax, cmap="plasma")
-    ax.set_title("MSE")
+    sns.heatmap(train_mse, annot=True, ax=ax, cmap="plasma", fmt=".3f")
+    ax.set_title("Training MSE")
+    ax.set_ylabel("$\eta$")
+    ax.set_xlabel("$\lambda$")
+    ax.set_yticklabels(eta_vals)
+    ax.set_xticklabels(lmbd_vals)
+    plt.show()
+
+    # Plot MSE test
+    fig, ax = plt.subplots(figsize=(8,8))
+    sns.heatmap(test_mse, annot=True, ax=ax, cmap="plasma", fmt=".3f")
+    ax.set_title("Test MSE")
+    ax.set_ylabel("$\eta$")
+    ax.set_xlabel("$\lambda$")
+    ax.set_yticklabels(eta_vals)
+    ax.set_xticklabels(lmbd_vals)
+    plt.show()
+
+    # Plot R2 training
+    fig, ax = plt.subplots(figsize=(8,8))
+    sns.heatmap(train_r2, annot=True, ax=ax, cmap="plasma", fmt=".3f")
+    ax.set_title("Training R2")
+    ax.set_ylabel("$\eta$")
+    ax.set_xlabel("$\lambda$")
+    ax.set_yticklabels(eta_vals)
+    ax.set_xticklabels(lmbd_vals)
+    plt.show()
+
+    # Plot R2 test
+    fig, ax = plt.subplots(figsize=(8,8))
+    sns.heatmap(test_r2, annot=True, ax=ax, cmap="plasma", fmt=".3f")
+    ax.set_title("Test R2")
     ax.set_ylabel("$\eta$")
     ax.set_xlabel("$\lambda$")
     ax.set_yticklabels(eta_vals)
@@ -112,7 +142,7 @@ def plot_activation_func_comparison(X_train, X_test, target, n_epochs, batches, 
         scores = linear_regression.fit(X_train, target, scheduler, epochs=n_epochs, batches=batches, lam=lmbd)
         pred = linear_regression.predict(X_test)
         plt.scatter(X_test[:,0], pred, c=activation_func_dict[key]['color'], marker=activation_func_dict[key]['marker'], label=key, zorder=10)
-        mse = mean_squared_error(pred, true_test)
+        mse = mean_squared_error(true_test, pred)
         r2 = r2_score(true_test, pred)
         print(f"\nActivation function: {key}\n\tMSE = \t{mse:.4f}\tR^2 = \t{r2:.4f}")
 
@@ -145,8 +175,8 @@ def compare_model_and_sklearn(X_train, X_test, target_train, true_test, layers, 
     pred_sklearn = clf.predict(X_test)
 
     # Score
-    score = mean_squared_error(pred, true_test)
-    score_sklearn = mean_squared_error(pred_sklearn, true_test)
+    score = mean_squared_error(true_test, pred)
+    score_sklearn = mean_squared_error(true_test, pred_sklearn)
     r2_our = r2_score(true_test, pred)
     r2_sklearn = r2_score(true_test, pred_sklearn)
 
@@ -190,11 +220,11 @@ def compare_weight_inits(X_train, X_test, target_train, true_test, eta, lmbd, ba
     pred_He = He_weight_model.predict(X_test)
 
     # Scores
-    score = mean_squared_error(pred, true_test)
-    score_XG = mean_squared_error(pred_XG, true_test)
+    score = mean_squared_error(true_test, pred)
     r2 = r2_score(true_test, pred)
+    score_XG = mean_squared_error(true_test, pred_XG)
     r2_XG = r2_score(true_test, pred_XG)
-    score_he = mean_squared_error(pred_He, true_test)
+    score_he = mean_squared_error(true_test, pred_He)
     r2_he = r2_score(true_test, pred_He)
 
     print(f"\nNormal weight initialization score: \tMSE\t{score:.4f}\t R^2\t{r2:.4f}")
@@ -215,7 +245,7 @@ def compare_weight_inits(X_train, X_test, target_train, true_test, eta, lmbd, ba
     plt.show()
     pass
 
-def epoch_minibatch_gridsearch(X_train, X_test, t_train, t_test, layers, eta, lam):
+def epoch_minibatch_gridsearch(X_train, X_test, t_train, layers, eta, lam):
     #### Grid search for epochs and batches ####
     n = 10
     epoch_space = np.linspace(100, 1000, n)
@@ -233,11 +263,11 @@ def epoch_minibatch_gridsearch(X_train, X_test, t_train, t_test, layers, eta, la
             linear_regression.reset_weights()
             score = linear_regression.fit(X_train, t_train, scheduler, epochs = int(epoch), batches=int(batch), lam=lam)
             pred_train = linear_regression.predict(X_train)
-            train_mse[i, j] = mean_squared_error(pred_train, t_train)
-            train_r2[i, j] = r2_score(t_train, pred_train)
+            train_mse[i, j] = mean_squared_error(true_train, pred_train)
+            train_r2[i, j] = r2_score(true_train, pred_train)
             pred_test = linear_regression.predict(X_test)
-            test_mse[i, j] = mean_squared_error(pred_test, t_test)
-            test_r2[i, j] = r2_score(t_test, pred_test)
+            test_mse[i, j] = mean_squared_error(true_test, pred_test)
+            test_r2[i, j] = r2_score(true_test, pred_test)
 
     train_mse = pd.DataFrame(train_mse, index = epoch_space, columns = batch_space)
     test_mse = pd.DataFrame(test_mse, index = epoch_space, columns = batch_space)
@@ -245,37 +275,29 @@ def epoch_minibatch_gridsearch(X_train, X_test, t_train, t_test, layers, eta, la
     test_r2 = pd.DataFrame(test_r2, index = epoch_space, columns = batch_space)
 
     fig, ax = plt.subplots(figsize = (8, 8))
-    sns.heatmap(train_mse, annot = True, ax = ax, cmap = "magma" , fmt = ".4f")
+    sns.heatmap(train_mse, annot = True, ax = ax, cmap = "magma" , fmt = ".3f")
     ax.set_title("Training MSE")
-    # ax.set_ylabel("$\eta$")
-    # ax.set_xlabel("$\lambda$")
     ax.set_ylabel("Epochs")
     ax.set_xlabel("Batches")
     plt.show()
 
     fig, ax = plt.subplots(figsize = (8, 8))
-    sns.heatmap(test_mse, annot = True, ax = ax, cmap = "magma" , fmt = ".4f" )
+    sns.heatmap(test_mse, annot = True, ax = ax, cmap = "magma" , fmt = ".3f" )
     ax.set_title("Test MSE")
-    # ax.set_ylabel("$\eta$")
-    # ax.set_xlabel("$\lambda$")
     ax.set_ylabel("Epochs")
     ax.set_xlabel("Batches")
     plt.show()
 
     fig, ax = plt.subplots(figsize = (8, 8))
-    sns.heatmap(train_r2, annot = True, ax = ax, cmap = "magma", fmt = ".4f")
+    sns.heatmap(train_r2, annot = True, ax = ax, cmap = "magma", fmt = ".3f")
     ax.set_title("Training R2")
-    # ax.set_ylabel("$\eta$")
-    # ax.set_xlabel("$\lambda$")
     ax.set_ylabel("Epochs")
     ax.set_xlabel("Batches")
     plt.show()
 
     fig, ax = plt.subplots(figsize = (8, 8))
-    sns.heatmap(test_r2, annot = True, ax = ax, cmap = "magma", fmt = ".4f")
+    sns.heatmap(test_r2, annot = True, ax = ax, cmap = "magma", fmt = ".3f")
     ax.set_title("Test R2")
-    # ax.set_ylabel("$\eta$")
-    # ax.set_xlabel("$\lambda$")
     ax.set_ylabel("Epochs")
     ax.set_xlabel("Batches")
     plt.show()
@@ -305,17 +327,20 @@ hidden_nodes_2 = 5
 output_nodes = t_train.shape[1]
 layers = (input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes)
 n_epochs = 500
-batches = 20
+batches = 50
 cost_func = CostOLS
 activation_func = sigmoid
+eta = 0.001
+lmbd = 0.001
 eta_vals = np.logspace(-5, -2, 4)
 lmbd_vals = np.logspace(-5, -1, 5)
 
-# create_eta_lambda_heatmap(X_train, t_train, eta_vals, lmbd_vals, n_epochs, batches) # Create heatmap of MSE for different learning rates and lambdas
-# output_func_compare(X_train, X_test, t_train, eta=0.01, lmbd=0.01, n_epochs=n_epochs, batches=batches) # Compare output functions
-# plot_activation_func_comparison(X_train, X_test, t_train, n_epochs, batches, eta=0.01, lmbd=0.01)# Train with different activation functions
-compare_model_and_sklearn(X_train, X_test, t_train, true_test, layers, lmbd=0.01, eta=0.01, batches=batches, n_epochs=n_epochs) # Compare our model with SciKit Learn
+# create_eta_lambda_heatmap(X_train, X_test, t_train, eta_vals, lmbd_vals, n_epochs, batches) # Create heatmap of MSE for different learning rates and lambdas
+epoch_minibatch_gridsearch(X_train, X_test, t_train, layers, eta, lmbd) # Grid search for epochs and batches
+# output_func_compare(X_train, X_test, t_train, eta=eta, lmbd=lmbd, n_epochs=n_epochs, batches=batches) # Compare output functions
+# plot_activation_func_comparison(X_train, X_test, t_train, n_epochs, batches, eta=eta, lmbd=lmbd)# Train with different activation functions
+# compare_model_and_sklearn(X_train, X_test, t_train, true_test, layers, lmbd=lmbd, eta=eta, batches=batches, n_epochs=n_epochs) # Compare our model with SciKit Learn
 
 # hidden_func_dict = {'Sigmoid': sigmoid, 'ReLU': RELU, 'Leaky ReLU': LRELU, 'Hyperbolic tangent': tanh}
 # for key in hidden_func_dict.keys():
-#     compare_weight_inits(X_train, X_test, t_train, true_test, eta=0.01, lmbd=0.01, batches=batches, n_epochs=n_epochs, hidden_activation=hidden_func_dict[key], plot_title=key) # Compare weight initializations
+#     compare_weight_inits(X_train, X_test, t_train, true_test, eta=eta, lmbd=lmbd, batches=batches, n_epochs=n_epochs, hidden_activation=hidden_func_dict[key], plot_title=key) # Compare weight initializations
