@@ -165,7 +165,7 @@ def compare_model_and_sklearn(X_train, X_test, target_train, true_test, layers, 
 
     # SciKit Learn model
     clf = MLPRegressor(hidden_layer_sizes=layers[1:-1], activation='logistic', solver='adam', 
-                       alpha=lmbd, batch_size=batch_size, learning_rate_init=eta, max_iter=400, 
+                       alpha=lmbd, batch_size=batch_size, learning_rate_init=10*eta, max_iter=n_epochs, 
                        shuffle=False, tol=0.001, verbose=False,
                        beta_1=0.9, beta_2=0.999, epsilon=10e-8)
     clf.fit(X_train, target_train.ravel())
@@ -249,7 +249,7 @@ def epoch_minibatch_gridsearch(X_train, X_test, t_train, layers, eta, lam):
     #### Grid search for epochs and batches ####
     n = 10
     epoch_space = np.linspace(100, 1000, n)
-    batch_space = np.linspace(1, 10, n)
+    batch_space = np.linspace(5, 50, n)
     train_mse = np.zeros((n, n))
     test_mse = np.zeros((n, n))
     train_r2 = np.zeros((n, n))
@@ -309,6 +309,7 @@ def epoch_minibatch_gridsearch(X_train, X_test, t_train, layers, eta, lam):
 
     print("r squared", train_r2)
 
+# Set variables and construct data
 rng_seed = 2023
 n = 100
 x = np.linspace(-3, 3, n)
@@ -317,17 +318,17 @@ y_true = 0.2*x**4 - 0.8*x**3 - 0.25*x**2
 y = y_true + noise
 X = np.column_stack((x.reshape(-1, 1), y.reshape(-1, 1)))
 
-# Split and scale
-X_train, X_test, t_train, t_test, true_train, true_test = train_test_split(X, y.reshape(-1, 1), y_true.reshape(-1, 1), test_size=0.2, random_state=rng_seed)
+# Split data (true_ are used for plotting and metrics)
+X_train, X_test, target_train, target_test, true_train, true_test = train_test_split(X, y.reshape(-1, 1), y_true.reshape(-1, 1), test_size=0.2, random_state=rng_seed)
 
-# Model
+# Set variables for the FFNN model
 input_nodes = X_train.shape[1]
 hidden_nodes_1 = 10
 hidden_nodes_2 = 5
-output_nodes = t_train.shape[1]
+output_nodes = target_train.shape[1]
 layers = (input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes)
-n_epochs = 500
-batches = 50
+n_epochs = 400
+batches = 25
 cost_func = CostOLS
 activation_func = sigmoid
 eta = 0.001
@@ -335,12 +336,13 @@ lmbd = 0.001
 eta_vals = np.logspace(-5, -2, 4)
 lmbd_vals = np.logspace(-5, -1, 5)
 
+#### Uncomment the function you want to run ####
 # create_eta_lambda_heatmap(X_train, X_test, t_train, eta_vals, lmbd_vals, n_epochs, batches) # Create heatmap of MSE for different learning rates and lambdas
-epoch_minibatch_gridsearch(X_train, X_test, t_train, layers, eta, lmbd) # Grid search for epochs and batches
-# output_func_compare(X_train, X_test, t_train, eta=eta, lmbd=lmbd, n_epochs=n_epochs, batches=batches) # Compare output functions
-# plot_activation_func_comparison(X_train, X_test, t_train, n_epochs, batches, eta=eta, lmbd=lmbd)# Train with different activation functions
-# compare_model_and_sklearn(X_train, X_test, t_train, true_test, layers, lmbd=lmbd, eta=eta, batches=batches, n_epochs=n_epochs) # Compare our model with SciKit Learn
+# epoch_minibatch_gridsearch(X_train, X_test, t_train, layers, eta, lmbd) # Grid search for epochs and batches
+output_func_compare(X_train, X_test, target_train, eta=eta, lmbd=lmbd, n_epochs=n_epochs, batches=batches) # Compare output functions
+# plot_activation_func_comparison(X_train, X_test, target_train, n_epochs, batches, eta=eta, lmbd=lmbd)# Train with different activation functions
+# compare_model_and_sklearn(X_train, X_test, target_train, true_test, layers, lmbd=lmbd, eta=eta, batches=batches, n_epochs=n_epochs) # Compare our model with SciKit Learn
 
 # hidden_func_dict = {'Sigmoid': sigmoid, 'ReLU': RELU, 'Leaky ReLU': LRELU, 'Hyperbolic tangent': tanh}
 # for key in hidden_func_dict.keys():
-#     compare_weight_inits(X_train, X_test, t_train, true_test, eta=eta, lmbd=lmbd, batches=batches, n_epochs=n_epochs, hidden_activation=hidden_func_dict[key], plot_title=key) # Compare weight initializations
+#     compare_weight_inits(X_train, X_test, target_train, true_test, eta=eta, lmbd=lmbd, batches=batches, n_epochs=n_epochs, hidden_activation=hidden_func_dict[key], plot_title=key) # Compare weight initializations
