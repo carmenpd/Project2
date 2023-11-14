@@ -19,8 +19,9 @@ def to_categorical_numpy(integer_vector):
     return onehot_vector
 
 # fetch dataset 
-breast_cancer_wisconsin_original = fetch_ucirepo(id=15)
-  
+#breast_cancer_wisconsin_original = fetch_ucirepo(id=15)
+breast_cancer_wisconsin_original = pd.DataFrame("/Users/carmen/Project2/wdbc.data")
+
 # data (as pandas dataframes) 
 X = breast_cancer_wisconsin_original.data.features
 y = breast_cancer_wisconsin_original.data.targets
