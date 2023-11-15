@@ -4,7 +4,7 @@ from functools import partial
 from sklearn.metrics import mean_squared_error, r2_score
 from autograd import grad
 
-class GradientDescend:
+class GradientDescendAG:
     def __init__(self, optimizer="gd", learning_rate=0.001, max_epochs=10000, batch_size=20,
                  learning_rate_decay=0.9, patience=20, delta_momentum=0.3, lmb=0.001,
                  tol=1e-8, change=0.0 ,delta=  1e-8, rho =0.9, beta1 = 0.9 , beta2 = 0.99 , momentum=True,
@@ -49,28 +49,28 @@ class GradientDescend:
         return cost
 
     def gradient_descent_step(self, X, y, thetas):
-        gradient = grad(self.cost_function, 2)(X, y, thetas)
+        gradient = self.compute_gradient(X, y, thetas)
         change = self.learning_rate * gradient + self.delta_momentum * self.change
         thetas -= change
         self.change = change
         return thetas
 
     def adagrad_step(self, X, y, thetas):
-        gradient = grad(self.cost_function, 2)(X, y, thetas)
+        gradient = self.compute_gradient(X, y, thetas)
         self.gradient_squared = gradient ** 2
         adjusted_grad = gradient / (np.sqrt(self.gradient_squared) + self.delta)
         thetas -= self.learning_rate * adjusted_grad
         return thetas
 
     def rmsprop_step(self, X, y, thetas):
-        gradient = grad(self.cost_function, 2)(X, y, thetas)
+        gradient = self.compute_gradient(X, y, thetas)
         self.gradient_squared = self.rho * self.gradient_squared + (1 - self.rho) * gradient ** 2
         adjusted_grad = gradient / (np.sqrt(self.gradient_squared) + self.delta)
         thetas -= self.learning_rate * adjusted_grad
         return thetas
 
     def adam_step(self, X, y, thetas):
-        gradients = grad(self.cost_function, 2)(X, y, thetas)
+        gradients = self.compute_gradient(X, y, thetas)
         self.first_moment = self.beta1*self.first_moment + (1-self.beta1)*gradients
         self.second_moment = self.beta2*self.second_moment+(1-self.beta2)*gradients**2
         first_term = self.first_moment/(1.0-self.beta1**self.iter)
