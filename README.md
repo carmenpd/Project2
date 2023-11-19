@@ -1,5 +1,3 @@
-# Project2
+# Project2 - FYS-STK4155
 
-part b: franke_tuning <br />
-part d: tuning_xor, breast_cancer <br />
-part e: breast_cancer_logreg <br />
+authors: Alessia Sanfelici, Federico Santona, Carmen Ditscheid and Andreas Alstad
