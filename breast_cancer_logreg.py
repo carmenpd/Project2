@@ -2,7 +2,7 @@ import pandas as pd
 from ucimlrepo import fetch_ucirepo 
 import autograd.numpy as np
 from sklearn.model_selection import train_test_split
-from FFNN_classification import *
+from FFNN import *
 from func_autograd import *
 import seaborn as sns
 import matplotlib.pyplot as plt

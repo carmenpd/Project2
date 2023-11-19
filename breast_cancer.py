@@ -3,7 +3,7 @@ from ucimlrepo import fetch_ucirepo
 import numpy as np
 import autograd.numpy as np
 from sklearn.model_selection import train_test_split
-from FFNN_classification import *
+from FFNN import *
 from func_autograd import *
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -70,7 +70,7 @@ for eta, sub in zip(eta_vals, range(len(ax.flatten()))):
     for key in score_dict.keys():
         for i, lmd in enumerate(lmbd_vals):
             try:
-                classif = FFNN_classification((input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes) , hidden_func= score_dict[key]['activationfunction'] , output_func= identity, cost_func=CostCrossEntropy, seed=2023)
+                classif = FFNN((input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes) , hidden_func= score_dict[key]['activationfunction'] , output_func= identity, cost_func=CostCrossEntropy, seed=2023)
                 classif.reset_weights()
                 score = classif.fit(X_train, t_train, scheduler=score_dict[key]['scheduler'], epochs = 200, batches=10, lam=lmd)
                 pred_train = classif.predict(X_train)
@@ -136,7 +136,7 @@ plt.show()
 # choices for hidden activation: sigmoid
 # choices for output activation: sigmoid (for binary output), softmax
 # choices for cost function: CostCrossEntropy (almost zero is th optimal result) or Accuracy (between zero and 1, 1 is the optimal result)
-classification = FFNN_classification((input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes), 
+classification = FFNN((input_nodes, hidden_nodes_1, hidden_nodes_2, output_nodes), 
                                      hidden_func=hidden_activation_func, output_func=output_activation_func, 
                                      cost_func=cost_function, seed=2023)
 
